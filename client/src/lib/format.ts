@@ -24,11 +24,14 @@ export const sessionEmoji = (id: string): string =>
 export const PROFILE_ROLES = ["player", "dealer", "host", "admin"] as const;
 export type ProfileRole = (typeof PROFILE_ROLES)[number];
 
-export const roleEmoji: Record<ProfileRole, string> = {
-  player: "🎯",
-  dealer: "🃏",
-  host: "🏠",
-  admin: "👑",
+export const roleMeta: Record<
+  ProfileRole,
+  { label: string; initial: string; cls: string }
+> = {
+  player: { label: "Player", initial: "P", cls: "bg-violet-100 text-violet-700" },
+  dealer: { label: "Dealer", initial: "D", cls: "bg-amber-100 text-amber-700" },
+  host: { label: "Host", initial: "H", cls: "bg-emerald-100 text-emerald-700" },
+  admin: { label: "Admin", initial: "A", cls: "bg-rose-100 text-rose-700" },
 };
 
 export const formatGameDate = (iso: string): string =>

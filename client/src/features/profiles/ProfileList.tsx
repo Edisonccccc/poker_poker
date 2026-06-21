@@ -46,7 +46,7 @@ export function ProfileList({ kind }: { kind: ProfileKind }) {
                   {p.roles.length > 0 && (
                     <RoleBadges
                       roles={p.roles}
-                      className="absolute bottom-1 right-1 rounded-full bg-white/90 px-1.5 py-0.5 text-xs shadow-sm"
+                      className="absolute bottom-1 left-1"
                     />
                   )}
                 </div>

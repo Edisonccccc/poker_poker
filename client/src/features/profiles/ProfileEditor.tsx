@@ -8,7 +8,7 @@ import {
   useUpdateProfile,
 } from "./hooks";
 import { singular, type Profile, type ProfileKind } from "./api";
-import { PROFILE_ROLES, roleEmoji } from "@/lib/format";
+import { PROFILE_ROLES, roleMeta } from "@/lib/format";
 
 export function ProfileEditor({
   kind,
@@ -143,13 +143,13 @@ export function ProfileEditor({
                 key={r}
                 type="button"
                 onClick={() => toggleRole(r)}
-                className={`min-h-tap rounded-xl px-3 py-2 text-sm font-semibold capitalize transition ${
+                className={`min-h-tap rounded-xl px-4 py-2 text-sm font-semibold transition ${
                   roles.includes(r)
                     ? "bg-violet-600 text-white"
                     : "bg-slate-100 text-slate-500"
                 }`}
               >
-                {roleEmoji[r]} {r}
+                {roleMeta[r].label}
               </button>
             ))}
           </div>
