@@ -25,6 +25,7 @@ const tableCreateSchema = z.object({
         color: z.string().min(1).max(40),
         value: z.number().nonnegative(),
         refPhotoId: z.string().uuid().nullable().optional(),
+        edgePhotoId: z.string().uuid().nullable().optional(),
       }),
     )
     .min(1, "add at least one chip denomination"),
@@ -142,6 +143,7 @@ gamesRouter.post("/:gameId/tables", async (req, res) => {
           color: d.color,
           value: d.value,
           refPhotoId: d.refPhotoId ?? null,
+          edgePhotoId: d.edgePhotoId ?? null,
         })),
       },
     },

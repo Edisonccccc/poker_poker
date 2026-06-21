@@ -8,7 +8,8 @@ export interface ImageData {
 export interface CountDenomination {
   color: string;
   value: number;
-  ref?: ImageData; // reference photo of this chip color
+  ref?: ImageData; // face reference photo
+  edge?: ImageData; // side/edge reference photo (key for counting stacks)
 }
 
 export interface PerColor {
@@ -62,14 +63,23 @@ export async function countChips(params: {
   ];
 
   for (const d of params.denominations) {
-    content.push({ type: "text", text: `Reference — ${d.color} = $${d.value}:` });
+    content.push({
+      type: "text",
+      text: `Reference — ${d.color} = $${d.value} (face then edge):`,
+    });
     if (d.ref) {
+      content.push({
+        type: "image",
+        source: { type: "base64", media_type: d.ref.mediaType, data: d.ref.data },
+      });
+    }
+    if (d.edge) {
       content.push({
         type: "image",
         source: {
           type: "base64",
-          media_type: d.ref.mediaType,
-          data: d.ref.data,
+          media_type: d.edge.mediaType,
+          data: d.edge.data,
         },
       });
     }

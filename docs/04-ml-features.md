@@ -67,10 +67,10 @@ Needs a capable vision model and a secret API key. Runs in the Express API
 reaches the client.
 
 ### Reference photos ("lock in")
-When a table is created, the host photographs each chip color and assigns its
-value (`chip_denominations` rows; reference image → a `photos` row referenced by
-`ref_photo_id`). These references are passed to the model so it can identify colors
-specific to this table's chip set.
+When a table is created, the host scans each chip from **two angles**: the **face**
+(`ref_photo_id`, also used to auto-fill color + value via `/api/chips/identify`)
+and the **edge/side** (`edge_photo_id`). Both are passed to the counting model —
+the edge photo is what lets it recognize chips inside a side-on stack.
 
 ### `POST /api/chips/count`
 

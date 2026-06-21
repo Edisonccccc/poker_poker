@@ -82,7 +82,8 @@ model Photo {
 
   playerAvatars Player[]           @relation("PlayerPhoto")
   dealerAvatars Dealer[]           @relation("DealerPhoto")
-  chipRefs      ChipDenomination[]
+  chipRefs      ChipDenomination[] @relation("ChipRef")
+  chipEdges     ChipDenomination[] @relation("ChipEdge")
   chipCounts    PlayerSession[]
 
   @@map("photos")
@@ -169,13 +170,15 @@ model Table {
 model ChipDenomination {
   id         String   @id @default(uuid()) @db.Uuid
   tableId    String   @map("table_id") @db.Uuid
-  color      String
-  value      Decimal  @db.Decimal(12, 2)
-  refPhotoId String?  @map("ref_photo_id") @db.Uuid
-  createdAt  DateTime @default(now()) @map("created_at")
+  color       String
+  value       Decimal  @db.Decimal(12, 2)
+  refPhotoId  String?  @map("ref_photo_id") @db.Uuid // face photo
+  edgePhotoId String?  @map("edge_photo_id") @db.Uuid // side/edge photo
+  createdAt   DateTime @default(now()) @map("created_at")
 
-  table    Table  @relation(fields: [tableId], references: [id], onDelete: Cascade)
-  refPhoto Photo? @relation(fields: [refPhotoId], references: [id])
+  table     Table  @relation(fields: [tableId], references: [id], onDelete: Cascade)
+  refPhoto  Photo? @relation("ChipRef", fields: [refPhotoId], references: [id])
+  edgePhoto Photo? @relation("ChipEdge", fields: [edgePhotoId], references: [id])
 
   @@unique([tableId, color])
   @@map("chip_denominations")

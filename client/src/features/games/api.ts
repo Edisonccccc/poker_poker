@@ -35,6 +35,7 @@ export interface Denomination {
   color: string;
   value: string; // Decimal serialized as string
   refPhotoId: string | null;
+  edgePhotoId: string | null;
 }
 
 export interface TableDetail {
@@ -58,6 +59,7 @@ export interface DenominationInput {
   color: string;
   value: number;
   refPhotoId?: string | null;
+  edgePhotoId?: string | null;
 }
 
 export interface CreateTableInput {

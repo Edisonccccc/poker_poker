@@ -320,7 +320,8 @@ and 404/403 otherwise, used by every mutating route.
 ## Photo storage (Postgres bytea)
 
 Photos are rows in the **`photos`** table (`data bytea`, `mime_type`), referenced by
-nullable FKs: `players.photo_id`, `dealers.photo_id`, `chip_denominations.ref_photo_id`,
+nullable FKs: `players.photo_id`, `dealers.photo_id`, `chip_denominations.ref_photo_id`
+(face) and `chip_denominations.edge_photo_id` (side/edge, for stack counting),
 `player_sessions.chip_photo_id`. Upload endpoint writes the row and returns its id;
 a read endpoint streams bytes with the correct content-type (cache them).
 

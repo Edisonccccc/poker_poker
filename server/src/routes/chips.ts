@@ -57,21 +57,23 @@ chipsRouter.post("/chips/count", async (req, res) => {
     return res.status(400).json({ error: "table has no chip denominations" });
   }
 
-  // Load reference photos referenced by the denominations.
-  const refIds = denoms
-    .map((d: any) => d.refPhotoId)
+  // Load all reference photos (face + edge) referenced by the denominations.
+  const photoIds = denoms
+    .flatMap((d: any) => [d.refPhotoId, d.edgePhotoId])
     .filter((id: string | null): id is string => Boolean(id));
-  const refPhotos = await prisma.photo.findMany({
-    where: { id: { in: refIds } },
+  const photos = await prisma.photo.findMany({
+    where: { id: { in: photoIds } },
   });
-  const refById = new Map<string, any>(refPhotos.map((p: any) => [p.id, p]));
+  const photoById = new Map<string, any>(photos.map((p: any) => [p.id, p]));
 
   const denominations: CountDenomination[] = denoms.map((d: any) => {
-    const ref = d.refPhotoId ? refById.get(d.refPhotoId) : undefined;
+    const ref = d.refPhotoId ? photoById.get(d.refPhotoId) : undefined;
+    const edge = d.edgePhotoId ? photoById.get(d.edgePhotoId) : undefined;
     return {
       color: d.color,
       value: Number(d.value),
       ref: ref ? toImageData(ref) : undefined,
+      edge: edge ? toImageData(edge) : undefined,
     };
   });
 
