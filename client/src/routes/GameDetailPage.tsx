@@ -1,12 +1,19 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { useGame } from "@/features/games/hooks";
+import { Trash2 } from "lucide-react";
+import { useGame, useDeleteTable } from "@/features/games/hooks";
 import { AddTableSheet } from "@/features/games/AddTableSheet";
 import { HostCosts } from "@/features/afterGame/HostCosts";
 import { Insurance } from "@/features/afterGame/Insurance";
 import { GameStatsPanel } from "@/features/stats/GameStatsPanel";
 import { StatusPill } from "./GamesPage";
-import { gameTypeLabel, formatGameDate, formatTime, tableEmoji } from "@/lib/format";
+import {
+  gameTypeLabel,
+  formatGameDate,
+  formatTime,
+  tableEmoji,
+  sessionEmoji,
+} from "@/lib/format";
 import type { TableSummary } from "@/features/games/api";
 
 type Tab = "tables" | "cost" | "stats";
@@ -15,6 +22,7 @@ export function GameDetailPage() {
   const { id } = useParams();
   const gameId = id!;
   const { data: game, isLoading, isError } = useGame(gameId);
+  const deleteTable = useDeleteTable(gameId);
   const [tab, setTab] = useState<Tab>("tables");
   const [adding, setAdding] = useState(false);
 
@@ -29,13 +37,16 @@ export function GameDetailPage() {
       </Link>
 
       <header className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            {game.label || formatGameDate(game.gameDate)}
-          </h1>
-          <p className="text-sm text-slate-500">
-            {formatGameDate(game.gameDate)} · {formatTime(game.startedAt)}
-          </p>
+        <div className="flex items-center gap-3">
+          <span className="text-3xl">{sessionEmoji(game.id)}</span>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">
+              {game.label || formatGameDate(game.gameDate)}
+            </h1>
+            <p className="text-sm text-slate-500">
+              {formatGameDate(game.gameDate)} · {formatTime(game.startedAt)}
+            </p>
+          </div>
         </div>
         <StatusPill status={game.status} />
       </header>
@@ -71,7 +82,18 @@ export function GameDetailPage() {
             ) : (
               <ul className="space-y-2">
                 {game.tables.map((t) => (
-                  <TableRow key={t.id} table={t} />
+                  <TableRow
+                    key={t.id}
+                    table={t}
+                    onDelete={() => {
+                      if (
+                        confirm(
+                          "Delete this table? Check-ins and buy-ins will be removed.",
+                        )
+                      )
+                        deleteTable.mutate(t.id);
+                    }}
+                  />
                 ))}
               </ul>
             )}
@@ -97,19 +119,25 @@ export function GameDetailPage() {
   );
 }
 
-function TableRow({ table }: { table: TableSummary }) {
+function TableRow({
+  table,
+  onDelete,
+}: {
+  table: TableSummary;
+  onDelete: () => void;
+}) {
   return (
-    <li>
+    <li className="card flex items-center gap-3">
       <Link
         to={`/tables/${table.id}`}
-        className="card flex items-center gap-3 active:bg-slate-100"
+        className="flex min-w-0 flex-1 items-center gap-3 active:opacity-70"
       >
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-2xl">
           {tableEmoji(table.id)}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-between">
-            <span className="font-semibold">
+          <div className="flex items-center gap-2">
+            <span className="truncate font-semibold">
               {gameTypeLabel(table.type)}
               {table.stakes ? ` ${table.stakes}` : ""}
             </span>
@@ -122,6 +150,13 @@ function TableRow({ table }: { table: TableSummary }) {
           </div>
         </div>
       </Link>
+      <button
+        onClick={onDelete}
+        className="shrink-0 p-2 text-slate-400"
+        aria-label="Delete table"
+      >
+        <Trash2 size={18} />
+      </button>
     </li>
   );
 }

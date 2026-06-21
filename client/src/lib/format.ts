@@ -5,12 +5,21 @@ export const gameTypeLabel = (t: GameType): string =>
 
 const TABLE_EMOJIS = ["🃏", "🎰", "♠️", "♥️", "♦️", "♣️", "🎲", "🪙", "💎", "🏆"];
 
-/** Deterministic, varied emoji for a table based on its id. */
-export const tableEmoji = (id: string): string => {
+const SESSION_EMOJIS = ["🎉", "🌙", "🔥", "🍀", "🎯", "💸", "🏆", "🎊", "🕹️", "⭐"];
+
+function hashId(id: string): number {
   let h = 0;
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
-  return TABLE_EMOJIS[h % TABLE_EMOJIS.length];
-};
+  return h;
+}
+
+/** Deterministic, varied emoji for a table based on its id. */
+export const tableEmoji = (id: string): string =>
+  TABLE_EMOJIS[hashId(id) % TABLE_EMOJIS.length];
+
+/** Deterministic, varied emoji for a session based on its id. */
+export const sessionEmoji = (id: string): string =>
+  SESSION_EMOJIS[hashId(id) % SESSION_EMOJIS.length];
 
 export const formatGameDate = (iso: string): string =>
   new Date(iso).toLocaleDateString(undefined, {
