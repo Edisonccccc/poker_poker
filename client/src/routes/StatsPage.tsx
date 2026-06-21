@@ -19,7 +19,7 @@ export function StatsPage() {
         )}
         {overview.data && (
           <div className="grid grid-cols-2 gap-3">
-            <Stat label="Games" value={String(overview.data.games)} />
+            <Stat label="Sessions" value={String(overview.data.games)} />
             <Stat label="Tables" value={String(overview.data.tables)} />
             <Stat label="Cash in" value={money(overview.data.cashIn)} />
             <Stat label="Host take" value={money(overview.data.hostTake)} />

@@ -31,7 +31,7 @@ export function CreateGameSheet({ onClose }: { onClose: () => void }) {
       onClose();
       navigate(`/games/${game.id}`);
     } catch (e) {
-      setError("Couldn't create the game.");
+      setError("Couldn't create the session.");
       console.error(e);
     }
   }
@@ -43,7 +43,7 @@ export function CreateGameSheet({ onClose }: { onClose: () => void }) {
           <button onClick={onClose} className="text-sm text-white/60">
             Cancel
           </button>
-          <h2 className="text-base font-semibold">New game</h2>
+          <h2 className="text-base font-semibold">New session</h2>
           <button
             onClick={save}
             disabled={create.isPending}

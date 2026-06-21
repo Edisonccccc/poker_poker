@@ -10,16 +10,20 @@ export function GamesPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold tracking-tight">Games</h1>
+      <h1 className="text-2xl font-bold tracking-tight">Sessions</h1>
 
       <button onClick={() => setCreating(true)} className="btn-primary w-full">
-        + New game
+        + New session
       </button>
 
       {isLoading && <p className="text-sm text-white/50">Loading…</p>}
-      {isError && <p className="text-sm text-amber-400">Couldn't load games.</p>}
+      {isError && (
+        <p className="text-sm text-amber-400">Couldn't load sessions.</p>
+      )}
       {data && data.length === 0 && (
-        <p className="text-sm text-white/50">No games yet. Create your first.</p>
+        <p className="text-sm text-white/50">
+          No sessions yet. Create your first.
+        </p>
       )}
 
       {data && data.length > 0 && (

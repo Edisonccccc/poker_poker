@@ -45,7 +45,7 @@ export function AdminPage() {
               <div className="text-sm text-white/55">{h.email}</div>
               <div className="mt-2 flex items-center justify-between text-sm">
                 <span className="text-white/55">
-                  {h.games} game{h.games === 1 ? "" : "s"} · {h.tables} table
+                  {h.games} session{h.games === 1 ? "" : "s"} · {h.tables} table
                   {h.tables === 1 ? "" : "s"} · {h.players} player
                   {h.players === 1 ? "" : "s"}
                 </span>
