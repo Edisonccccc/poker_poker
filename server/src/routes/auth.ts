@@ -10,9 +10,13 @@ export const authRouter = Router();
 // Accounts log in with a username (their name). We store it in the unique
 // `email` column (the login key) so no schema change is needed. The display
 // name defaults to the username.
+// New accounts must supply this referral code to register.
+const REFERRAL_CODE = (process.env.REFERRAL_CODE ?? "edison").toLowerCase();
+
 const registerSchema = z.object({
   username: z.string().min(1, "name is required").max(80),
   password: z.string().min(8, "password must be at least 8 characters"),
+  referralCode: z.string().min(1, "referral code is required"),
 });
 
 const loginSchema = z.object({
@@ -44,6 +48,10 @@ authRouter.post("/register", async (req, res) => {
   }
   const username = parsed.data.username.trim();
   const { password } = parsed.data;
+
+  if (parsed.data.referralCode.trim().toLowerCase() !== REFERRAL_CODE) {
+    return res.status(403).json({ error: "invalid referral code" });
+  }
 
   const existing = await prisma.user.findUnique({ where: { email: username } });
   if (existing) {

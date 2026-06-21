@@ -19,7 +19,11 @@ interface AuthState {
   user: User | null;
   loading: boolean;
   login: (username: string, password: string) => Promise<void>;
-  register: (username: string, password: string) => Promise<void>;
+  register: (
+    username: string,
+    password: string,
+    referralCode: string,
+  ) => Promise<void>;
   logout: () => void;
 }
 
@@ -59,8 +63,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     login: (username, password) =>
       authenticate("/auth/login", { username, password }),
-    register: (username, password) =>
-      authenticate("/auth/register", { username, password }),
+    register: (username, password, referralCode) =>
+      authenticate("/auth/register", { username, password, referralCode }),
     logout: () => {
       localStorage.removeItem(TOKEN_KEY);
       setAuthToken(null);

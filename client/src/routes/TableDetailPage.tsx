@@ -126,6 +126,70 @@ export function TableDetailPage() {
         </button>
       </div>
 
+      {groups.length > 0 && (
+        <section className="card space-y-2">
+          <h2 className="label">Players</h2>
+          <ul className="space-y-2">
+            {groups.map((g) => (
+              <li
+                key={g.playerId}
+                className="flex items-center gap-3 rounded-xl bg-slate-100 p-3"
+              >
+                <button
+                  onClick={() => setSelectedPlayerId(g.playerId)}
+                  className="flex min-w-0 flex-1 items-center gap-3 text-left active:opacity-70"
+                >
+                  <div className="relative shrink-0">
+                    <AuthImage
+                      photoId={g.player.photoId}
+                      alt={g.player.name}
+                      fallback="avatar"
+                      className={`h-10 w-10 rounded-full object-cover ${
+                        g.hasActive
+                          ? "ring-2 ring-emerald-400"
+                          : "opacity-60 grayscale"
+                      }`}
+                    />
+                    <span
+                      className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white ${
+                        g.hasActive ? "bg-emerald-500" : "bg-slate-400"
+                      }`}
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate font-medium">{g.player.name}</div>
+                    <div className="text-xs text-slate-500">
+                      {g.hasActive
+                        ? `Playing · ${money(g.totalBuyIn)} in`
+                        : `Out · net ${money(g.netSoFar)}`}
+                    </div>
+                  </div>
+                </button>
+                {g.hasActive ? (
+                  <button
+                    onClick={() => g.active && setCheckoutFor(g.active)}
+                    className="shrink-0 rounded-lg bg-violet-600 text-white px-3 py-1.5 text-sm font-semibold"
+                  >
+                    Cash out
+                  </button>
+                ) : (
+                  <button
+                    onClick={() =>
+                      checkInPlayer.mutate(g.playerId, {
+                        onError: () => alert("Couldn't check in again."),
+                      })
+                    }
+                    className="shrink-0 rounded-lg bg-emerald-600 text-white px-3 py-1.5 text-sm font-semibold"
+                  >
+                    Check in
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {dealers.data && dealers.data.length > 0 && (
         <section className="card space-y-2">
           <h2 className="label">Dealers</h2>

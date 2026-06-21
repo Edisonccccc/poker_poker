@@ -8,6 +8,7 @@ export function LoginPage() {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [referralCode, setReferralCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -24,12 +25,14 @@ export function LoginPage() {
       if (mode === "login") {
         await login(username, password);
       } else {
-        await register(username, password);
+        await register(username, password, referralCode);
       }
       navigate("/", { replace: true });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "";
-      if (msg.includes("API 409")) {
+      if (msg.includes("API 403")) {
+        setError("Invalid referral code. Ask the host for a valid code.");
+      } else if (msg.includes("API 409")) {
         setError("That name is already taken — try signing in.");
       } else if (msg.includes("API 400")) {
         setError(
@@ -75,6 +78,16 @@ export function LoginPage() {
             autoComplete={mode === "login" ? "current-password" : "new-password"}
             required
           />
+          {mode === "register" && (
+            <Field
+              label="Referral code"
+              value={referralCode}
+              onChange={setReferralCode}
+              placeholder="Enter referral code"
+              autoComplete="off"
+              required
+            />
+          )}
 
           {error && <p className="text-sm text-amber-600">{error}</p>}
 

@@ -62,14 +62,14 @@ export function PokerTable({
                   : "border-slate-500 opacity-60 grayscale"
               }`}
             />
-            <span className="mt-1 max-w-[84px] truncate text-[11px] font-semibold leading-tight text-slate-700">
+            <span className="mt-1 max-w-[84px] truncate rounded-md bg-white/95 px-2 py-[1px] text-[11px] font-semibold leading-tight text-slate-800 shadow-sm ring-1 ring-black/5">
               {seat.name}
             </span>
             <span
               className={`mt-0.5 rounded-full px-2 py-[1px] text-[10px] font-bold leading-tight shadow-sm ${
                 seat.active
                   ? "bg-emerald-500 text-white"
-                  : "bg-slate-600/80 text-slate-100"
+                  : "bg-slate-600/90 text-slate-100"
               }`}
             >
               {seat.subtitle}
