@@ -7,6 +7,14 @@ export function sessionHours(
   return Math.max(0, (end - new Date(checkinAt).getTime()) / 3_600_000);
 }
 
+/** Comp hours: actual duration rounded UP to the next whole hour. */
+export function compHours(
+  checkinAt: Date | string,
+  checkoutAt: Date | string | null,
+): number {
+  return Math.ceil(sessionHours(checkinAt, checkoutAt));
+}
+
 /** Optional hourly time-comp the host returns to a player (0 if disabled). */
 export function sessionComp(s: {
   hourlyReturn: boolean;
@@ -15,6 +23,5 @@ export function sessionComp(s: {
   checkoutAt: Date | string | null;
 }): number {
   if (!s.hourlyReturn) return 0;
-  const amount = Number(s.hourlyRate) * sessionHours(s.checkinAt, s.checkoutAt);
-  return Math.round(amount * 100) / 100;
+  return Number(s.hourlyRate) * compHours(s.checkinAt, s.checkoutAt);
 }

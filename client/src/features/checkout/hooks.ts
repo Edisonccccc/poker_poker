@@ -10,12 +10,16 @@ export function useCheckoutPlayer(tableId: string) {
       reimbursements: ReimbursementInput[];
       hourlyReturn?: boolean;
       hourlyRate?: number;
+      checkinAt?: string;
+      checkoutAt?: string;
     }) =>
       checkoutPlayer(args.sessionId, {
         chipsOut: args.chipsOut,
         reimbursements: args.reimbursements,
         hourlyReturn: args.hourlyReturn,
         hourlyRate: args.hourlyRate,
+        checkinAt: args.checkinAt,
+        checkoutAt: args.checkoutAt,
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["player-sessions", tableId] });

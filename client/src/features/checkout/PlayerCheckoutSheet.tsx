@@ -1,11 +1,19 @@
 import { useState } from "react";
 import { useCheckoutPlayer } from "./hooks";
 import type { PlayerSession } from "@/features/sessions/api";
-import { money, formatDuration } from "@/lib/format";
+import { money } from "@/lib/format";
 
 interface ReimbDraft {
   category: string;
   amount: string;
+}
+
+/** ISO → value for <input type="datetime-local"> (local time, no seconds). */
+function toLocalInput(iso: string): string {
+  const d = new Date(iso);
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 16);
 }
 
 export function PlayerCheckoutSheet({
@@ -23,17 +31,19 @@ export function PlayerCheckoutSheet({
   const [reimb, setReimb] = useState<ReimbDraft[]>([]);
   const [hourlyReturn, setHourlyReturn] = useState(session.hourlyReturn);
   const [hourlyRate, setHourlyRate] = useState(session.hourlyRate ?? "25");
+  const [checkinLocal, setCheckinLocal] = useState(toLocalInput(session.checkinAt));
+  const [checkoutLocal, setCheckoutLocal] = useState(
+    toLocalInput(session.checkoutAt ?? new Date().toISOString()),
+  );
   const [error, setError] = useState<string | null>(null);
   const checkout = useCheckoutPlayer(tableId);
 
   const reimbTotal = reimb.reduce((a, r) => a + (Number(r.amount) || 0), 0);
-  const hours =
-    ((session.checkoutAt ? new Date(session.checkoutAt) : new Date()).getTime() -
-      new Date(session.checkinAt).getTime()) /
+  const rawHours =
+    (new Date(checkoutLocal).getTime() - new Date(checkinLocal).getTime()) /
     3_600_000;
-  const comp = hourlyReturn
-    ? Math.round((Number(hourlyRate) || 0) * hours * 100) / 100
-    : 0;
+  const ceilHours = Number.isFinite(rawHours) ? Math.max(0, Math.ceil(rawHours)) : 0;
+  const comp = hourlyReturn ? (Number(hourlyRate) || 0) * ceilHours : 0;
   const net = (Number(chips) || 0) - session.buyInTotal + reimbTotal + comp;
 
   function patch(i: number, p: Partial<ReimbDraft>) {
@@ -55,6 +65,8 @@ export function PlayerCheckoutSheet({
           .map((r) => ({ category: r.category.trim(), amount: Number(r.amount) })),
         hourlyReturn,
         hourlyRate: Number(hourlyRate) || 0,
+        checkinAt: new Date(checkinLocal).toISOString(),
+        checkoutAt: new Date(checkoutLocal).toISOString(),
       });
       onClose();
     } catch (e) {
@@ -134,14 +146,32 @@ export function PlayerCheckoutSheet({
         </div>
 
         <div className="space-y-2">
-          <label className="flex items-center justify-between">
+          <span className="label">Time at table</span>
+          <div className="flex gap-2">
+            <label className="flex-1 space-y-1">
+              <span className="text-xs text-slate-500">Check-in</span>
+              <input
+                type="datetime-local"
+                value={checkinLocal}
+                onChange={(e) => setCheckinLocal(e.target.value)}
+                className="input"
+              />
+            </label>
+            <label className="flex-1 space-y-1">
+              <span className="text-xs text-slate-500">Check-out</span>
+              <input
+                type="datetime-local"
+                value={checkoutLocal}
+                onChange={(e) => setCheckoutLocal(e.target.value)}
+                className="input"
+              />
+            </label>
+          </div>
+          <label className="flex items-center justify-between pt-1">
             <span className="text-sm font-medium">
               Time comp{" "}
               <span className="text-slate-400">
-                ({formatDuration(
-                  session.checkinAt,
-                  session.checkoutAt ?? undefined,
-                )})
+                ({ceilHours}h, rounded up)
               </span>
             </span>
             <input
@@ -161,7 +191,7 @@ export function PlayerCheckoutSheet({
                 className="input w-24"
               />
               <span className="ml-auto text-sm font-semibold text-emerald-600">
-                +{money(comp)}
+                {ceilHours}h × {money(Number(hourlyRate) || 0)} = +{money(comp)}
               </span>
             </div>
           )}

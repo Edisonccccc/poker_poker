@@ -13,6 +13,8 @@ export const checkoutPlayer = (
     reimbursements: ReimbursementInput[];
     hourlyReturn?: boolean;
     hourlyRate?: number;
+    checkinAt?: string;
+    checkoutAt?: string;
   },
 ) => api.post<PlayerSession>(`/player-sessions/${sessionId}/checkout`, body);
 

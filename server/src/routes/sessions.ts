@@ -29,6 +29,8 @@ const playerCheckoutSchema = z.object({
     .optional(),
   hourlyReturn: z.boolean().optional(),
   hourlyRate: z.number().nonnegative().optional(),
+  checkinAt: z.string().optional(),
+  checkoutAt: z.string().optional(),
 });
 const dealerCheckoutSchema = z.object({ tipsTotal: z.number().nonnegative() });
 const paymentSchema = z.object({
@@ -226,8 +228,13 @@ sessionsRouter.post("/player-sessions/:id/checkout", async (req, res) => {
       data: {
         chipsOut: parsed.data.chipsOut,
         chipMethod: "manual",
-        checkoutAt: new Date(),
+        checkoutAt: parsed.data.checkoutAt
+          ? new Date(parsed.data.checkoutAt)
+          : new Date(),
         status: "checked_out",
+        ...(parsed.data.checkinAt
+          ? { checkinAt: new Date(parsed.data.checkinAt) }
+          : {}),
         ...(parsed.data.hourlyReturn !== undefined
           ? { hourlyReturn: parsed.data.hourlyReturn }
           : {}),
