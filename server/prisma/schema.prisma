@@ -47,6 +47,7 @@ enum LedgerType {
   reimbursement
   tip
   adjustment
+  payment
 }
 
 enum PartyType {

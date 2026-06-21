@@ -1,12 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   addBuyIn,
+  addPayment,
   checkInDealer,
   checkInPlayer,
   listDealerSessions,
   listPlayerSessions,
   removeDealerSession,
   removePlayerSession,
+  type PaymentDirection,
 } from "./api";
 
 const playerKey = (tableId: string) => ["player-sessions", tableId];
@@ -48,6 +50,21 @@ export function useAddBuyIn(tableId: string) {
     mutationFn: (args: { sessionId: string; amount: number }) =>
       addBuyIn(args.sessionId, args.amount),
     onSuccess: () => qc.invalidateQueries({ queryKey: playerKey(tableId) }),
+  });
+}
+
+export function useAddPayment(tableId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (args: {
+      sessionId: string;
+      direction: PaymentDirection;
+      amount: number;
+    }) => addPayment(args.sessionId, args.direction, args.amount),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: playerKey(tableId) });
+      qc.invalidateQueries({ queryKey: ["settlement"] });
+    },
   });
 }
 

@@ -8,6 +8,7 @@ import {
   useCheckInPlayer,
   useCheckInDealer,
   useAddBuyIn,
+  useAddPayment,
   useRemovePlayerSession,
   useRemoveDealerSession,
 } from "@/features/sessions/hooks";
@@ -18,6 +19,7 @@ import {
 } from "@/features/sessions/api";
 import { CheckInSheet } from "@/features/sessions/CheckInSheet";
 import { BuyInSheet } from "@/features/sessions/BuyInSheet";
+import { PaymentSheet } from "@/features/sessions/PaymentSheet";
 import { PlayerHistorySheet } from "@/features/sessions/PlayerHistorySheet";
 import { PlayerCheckoutSheet } from "@/features/checkout/PlayerCheckoutSheet";
 import { DealerCheckoutSheet } from "@/features/checkout/DealerCheckoutSheet";
@@ -37,6 +39,7 @@ export function TableDetailPage() {
   const checkInPlayer = useCheckInPlayer(tableId);
   const checkInDealer = useCheckInDealer(tableId);
   const addBuyIn = useAddBuyIn(tableId);
+  const addPayment = useAddPayment(tableId);
   const removePlayer = useRemovePlayerSession(tableId);
   const removeDealer = useRemoveDealerSession(tableId);
   const delTable = useDeleteTable(table?.gameId ?? "");
@@ -44,6 +47,7 @@ export function TableDetailPage() {
   const [checkin, setCheckin] = useState<"players" | "dealers" | null>(null);
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [buyInFor, setBuyInFor] = useState<PlayerSession | null>(null);
+  const [paymentFor, setPaymentFor] = useState<PlayerSession | null>(null);
   const [checkoutFor, setCheckoutFor] = useState<PlayerSession | null>(null);
   const [dealerCheckout, setDealerCheckout] = useState<DealerSession | null>(null);
 
@@ -170,6 +174,7 @@ export function TableDetailPage() {
           onClose={() => setSelectedPlayerId(null)}
           onBuyIn={(s) => setBuyInFor(s)}
           onCheckout={(s) => setCheckoutFor(s)}
+          onPayment={(s) => setPaymentFor(s)}
           onCheckInAgain={() =>
             checkInPlayer.mutate(selectedGroup.playerId, {
               onError: () => alert("Couldn't check in again."),
@@ -217,6 +222,19 @@ export function TableDetailPage() {
             addBuyIn.mutate(
               { sessionId: buyInFor.id, amount },
               { onSuccess: () => setBuyInFor(null) },
+            )
+          }
+        />
+      )}
+      {paymentFor && (
+        <PaymentSheet
+          playerName={paymentFor.player.name}
+          busy={addPayment.isPending}
+          onClose={() => setPaymentFor(null)}
+          onSubmit={(direction, amount) =>
+            addPayment.mutate(
+              { sessionId: paymentFor.id, direction, amount },
+              { onSuccess: () => setPaymentFor(null) },
             )
           }
         />

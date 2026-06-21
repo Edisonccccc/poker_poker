@@ -10,9 +10,9 @@ export interface SessionPerson {
 
 export interface LedgerEntry {
   id: string;
-  type: "buy_in" | "reimbursement" | "tip" | "adjustment";
+  type: "buy_in" | "reimbursement" | "tip" | "adjustment" | "payment";
   amount: number;
-  category: string | null;
+  category: string | null; // payment: 'sent' | 'received'
   occurredAt: string;
 }
 
@@ -94,6 +94,17 @@ export const checkInDealer = (tableId: string, profileId: string) =>
 
 export const addBuyIn = (sessionId: string, amount: number) =>
   api.post<{ id: string }>(`/player-sessions/${sessionId}/buy-ins`, { amount });
+
+export type PaymentDirection = "sent" | "received";
+export const addPayment = (
+  sessionId: string,
+  direction: PaymentDirection,
+  amount: number,
+) =>
+  api.post<{ id: string }>(`/player-sessions/${sessionId}/payments`, {
+    direction,
+    amount,
+  });
 
 export const removePlayerSession = (id: string) =>
   api.del<void>(`/player-sessions/${id}`);

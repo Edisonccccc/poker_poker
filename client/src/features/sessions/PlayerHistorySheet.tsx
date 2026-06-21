@@ -10,6 +10,7 @@ export function PlayerHistorySheet({
   group,
   onBuyIn,
   onCheckout,
+  onPayment,
   onCheckInAgain,
   onRemoveSession,
   onClose,
@@ -17,11 +18,25 @@ export function PlayerHistorySheet({
   group: PlayerGroup;
   onBuyIn: (s: PlayerSession) => void;
   onCheckout: (s: PlayerSession) => void;
+  onPayment: (s: PlayerSession) => void;
   onCheckInAgain: () => void;
   onRemoveSession: (id: string) => void;
   onClose: () => void;
 }) {
   const latest = group.sessions[group.sessions.length - 1];
+
+  function entryLabel(e: PlayerSession["entries"][number]): string {
+    switch (e.type) {
+      case "buy_in":
+        return "Buy-in";
+      case "reimbursement":
+        return `Reimburse${e.category ? ` (${e.category})` : ""}`;
+      case "payment":
+        return e.category === "received" ? "Received from" : "Sent to";
+      default:
+        return e.type;
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-20 flex items-end bg-slate-900/40" onClick={onClose}>
@@ -81,6 +96,15 @@ export function PlayerHistorySheet({
           )}
         </div>
 
+        <div className="px-4 pb-2">
+          <button
+            onClick={() => onPayment(group.active ?? latest)}
+            className="btn-ghost w-full text-sm"
+          >
+            Record payment (sent / received)
+          </button>
+        </div>
+
         {/* History (scrollable) */}
         <div
           className="flex-1 space-y-3 overflow-y-auto p-4 pt-2"
@@ -110,15 +134,12 @@ export function PlayerHistorySheet({
                 </li>
                 {s.entries.map((e) => (
                   <li key={e.id} className="flex justify-between">
-                    <span>
-                      {e.type === "buy_in"
-                        ? "Buy-in"
-                        : e.type === "reimbursement"
-                          ? `Reimburse${e.category ? ` (${e.category})` : ""}`
-                          : e.type}{" "}
-                      · {formatTime(e.occurredAt)}
+                    <span className={e.type === "payment" ? "text-violet-600" : ""}>
+                      {entryLabel(e)} · {formatTime(e.occurredAt)}
                     </span>
-                    <span>{money(e.amount)}</span>
+                    <span className={e.type === "payment" ? "text-violet-600" : ""}>
+                      {money(e.amount)}
+                    </span>
                   </li>
                 ))}
                 {s.status === "checked_out" ? (

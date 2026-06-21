@@ -46,7 +46,7 @@ create type game_type     as enum ('texas_holdem', 'blackjack');     -- extensib
 create type game_status   as enum ('open', 'closed');
 create type table_status  as enum ('open', 'closed');
 create type session_status as enum ('active', 'checked_out');
-create type ledger_type   as enum ('buy_in', 'reimbursement', 'tip', 'adjustment');
+create type ledger_type   as enum ('buy_in', 'reimbursement', 'tip', 'adjustment', 'payment');
 create type party_type    as enum ('player', 'dealer', 'other');
 ```
 
@@ -226,6 +226,9 @@ create index on settlements(game_id);
 - `reimbursement` — host pays player back (uber/food/other). Increases payout to
   player. Use `category`.
 - `tip` — dealer tip line (attach to `dealer_session_id`).
+- `payment` — cash settled with a player out-of-band; `category` is `'sent'`
+  (host → player) or `'received'` (player → host). Recorded for the books; does
+  not change the chip-based net.
 - `adjustment` — manual correction; `note` **required**. May be **signed**
   (positive or negative). All other types must be ≥ 0. Enforced by:
   `check (type = 'adjustment' or amount >= 0)`.

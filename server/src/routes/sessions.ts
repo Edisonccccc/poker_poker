@@ -28,6 +28,10 @@ const playerCheckoutSchema = z.object({
     .optional(),
 });
 const dealerCheckoutSchema = z.object({ tipsTotal: z.number().nonnegative() });
+const paymentSchema = z.object({
+  direction: z.enum(["sent", "received"]),
+  amount: z.number().positive(),
+});
 
 const PLAYER_SELECT = {
   id: true,
@@ -129,6 +133,27 @@ sessionsRouter.post("/player-sessions/:id/buy-ins", async (req, res) => {
         : undefined,
     },
     select: { id: true, amount: true, occurredAt: true },
+  });
+  res.status(201).json(entry);
+});
+
+// Record a cash payment for a player: host sent to / received from them.
+sessionsRouter.post("/player-sessions/:id/payments", async (req, res) => {
+  const session = await getOwnedPlayerSession(req.params.id, req.user!.id);
+  if (!session) return res.status(404).json({ error: "not found" });
+  const parsed = paymentSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.flatten() });
+  }
+  const entry = await prisma.ledgerEntry.create({
+    data: {
+      tableId: session.tableId,
+      playerSessionId: session.id,
+      type: "payment",
+      amount: parsed.data.amount,
+      category: parsed.data.direction, // 'sent' | 'received'
+    },
+    select: { id: true, amount: true, category: true, occurredAt: true },
   });
   res.status(201).json(entry);
 });
