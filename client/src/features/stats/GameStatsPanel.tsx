@@ -37,7 +37,10 @@ export function GameStatsPanel({
           <Row label="Insurance payouts" value={-t.insurancePayouts} />
         )}
         {t.hourlyComp > 0 && (
-          <Row label="Player time comps" value={-t.hourlyComp} />
+          <Row label="Hourly rebates" value={-t.hourlyComp} />
+        )}
+        {t.pctRebate > 0 && (
+          <Row label="Percentage rebates" value={-t.pctRebate} />
         )}
         <div className="my-2 border-t border-slate-200" />
         <Row label="Host take" value={t.hostTake} bold />
@@ -55,7 +58,7 @@ export function GameStatsPanel({
             {leaderboard.map((p) => (
               <li
                 key={p.sessionId}
-                className="flex items-center justify-between rounded-xl bg-slate-100 px-3 py-2 text-sm"
+                className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-sm"
               >
                 <span className="truncate">{p.player.name}</span>
                 {p.net === null ? (
@@ -80,7 +83,7 @@ export function GameStatsPanel({
             {data.dealers.map((d) => (
               <li
                 key={d.sessionId}
-                className="flex items-center justify-between rounded-xl bg-slate-100 px-3 py-2 text-sm"
+                className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-sm"
               >
                 <span className="truncate">{d.dealer.name}</span>
                 <span className="text-slate-600">
@@ -102,7 +105,7 @@ export function GameStatsPanel({
             const cashIn = ps.reduce((a, p) => a + p.buyInTotal, 0);
             const payout = ps.reduce((a, p) => a + (p.chipsOut ?? 0), 0);
             return (
-              <li key={tbl.id} className="rounded-xl bg-slate-100 px-3 py-2">
+              <li key={tbl.id} className="rounded-xl bg-slate-50 px-3 py-2">
                 <div className="text-sm font-medium">
                   {gameTypeLabel(tbl.type)}
                   {tbl.stakes ? ` ${tbl.stakes}` : ""}

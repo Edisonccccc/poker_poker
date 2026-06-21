@@ -15,7 +15,7 @@ export function compHours(
   return Math.ceil(sessionHours(checkinAt, checkoutAt));
 }
 
-/** Optional hourly time-comp the host returns to a player (0 if disabled). */
+/** Optional hourly rebate the host returns to a player (0 if disabled). */
 export function sessionComp(s: {
   hourlyReturn: boolean;
   hourlyRate: unknown;
@@ -24,4 +24,19 @@ export function sessionComp(s: {
 }): number {
   if (!s.hourlyReturn) return 0;
   return Number(s.hourlyRate) * compHours(s.checkinAt, s.checkoutAt);
+}
+
+/**
+ * Percentage rebate: a % of the player's loss, only when under water
+ * (chips out < bought in). 0 otherwise.
+ */
+export function sessionPctRebate(
+  s: { pctRebate: boolean; pctRate: unknown },
+  buyInTotal: number,
+  chipsOut: number,
+): number {
+  if (!s.pctRebate) return 0;
+  const loss = buyInTotal - chipsOut;
+  if (loss <= 0) return 0;
+  return Math.round((Number(s.pctRate) / 100) * loss * 100) / 100;
 }

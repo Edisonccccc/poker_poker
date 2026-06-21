@@ -13,6 +13,8 @@ export const checkoutPlayer = (
     reimbursements: ReimbursementInput[];
     hourlyReturn?: boolean;
     hourlyRate?: number;
+    pctRebate?: boolean;
+    pctRate?: number;
     checkinAt?: string;
     checkoutAt?: string;
   },

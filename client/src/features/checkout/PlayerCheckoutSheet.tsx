@@ -3,11 +3,6 @@ import { useCheckoutPlayer } from "./hooks";
 import type { PlayerSession } from "@/features/sessions/api";
 import { money } from "@/lib/format";
 
-interface ReimbDraft {
-  category: string;
-  amount: string;
-}
-
 /** ISO → value for <input type="datetime-local"> (local time, no seconds). */
 function toLocalInput(iso: string): string {
   const d = new Date(iso);
@@ -25,30 +20,44 @@ export function PlayerCheckoutSheet({
   session: PlayerSession;
   onClose: () => void;
 }) {
+  const buyIn = session.buyInTotal;
+  const uberEntry = session.entries?.find(
+    (e) => e.type === "reimbursement" && e.category === "uber",
+  );
+
   const [chips, setChips] = useState(
     session.chipsOut !== null ? String(session.chipsOut) : "",
   );
-  const [reimb, setReimb] = useState<ReimbDraft[]>([]);
-  const [hourlyReturn, setHourlyReturn] = useState(session.hourlyReturn);
-  const [hourlyRate, setHourlyRate] = useState(session.hourlyRate ?? "25");
   const [checkinLocal, setCheckinLocal] = useState(toLocalInput(session.checkinAt));
   const [checkoutLocal, setCheckoutLocal] = useState(
     toLocalInput(session.checkoutAt ?? new Date().toISOString()),
   );
+  const [hourlyOn, setHourlyOn] = useState(session.hourlyReturn);
+  const [hourlyRate, setHourlyRate] = useState(session.hourlyRate ?? "25");
+  const [pctOn, setPctOn] = useState(session.pctRebate);
+  const [pctRate, setPctRate] = useState(session.pctRate ?? "10");
+  const [uberOn, setUberOn] = useState(!!uberEntry);
+  const [uberAmount, setUberAmount] = useState(
+    uberEntry ? String(uberEntry.amount) : "",
+  );
   const [error, setError] = useState<string | null>(null);
   const checkout = useCheckoutPlayer(tableId);
 
-  const reimbTotal = reimb.reduce((a, r) => a + (Number(r.amount) || 0), 0);
+  const chipsN = Number(chips) || 0;
+  const underWater = chips !== "" && chipsN < buyIn;
+  const loss = Math.max(0, buyIn - chipsN);
+
   const rawHours =
     (new Date(checkoutLocal).getTime() - new Date(checkinLocal).getTime()) /
     3_600_000;
   const ceilHours = Number.isFinite(rawHours) ? Math.max(0, Math.ceil(rawHours)) : 0;
-  const comp = hourlyReturn ? (Number(hourlyRate) || 0) * ceilHours : 0;
-  const net = (Number(chips) || 0) - session.buyInTotal + reimbTotal + comp;
-
-  function patch(i: number, p: Partial<ReimbDraft>) {
-    setReimb((rows) => rows.map((r, j) => (j === i ? { ...r, ...p } : r)));
-  }
+  const hourlyAmt = hourlyOn ? (Number(hourlyRate) || 0) * ceilHours : 0;
+  const pctAmt =
+    pctOn && underWater
+      ? Math.round(((Number(pctRate) || 0) / 100) * loss * 100) / 100
+      : 0;
+  const uberAmt = uberOn ? Number(uberAmount) || 0 : 0;
+  const net = chipsN - buyIn + hourlyAmt + pctAmt + uberAmt;
 
   async function save() {
     if (chips === "") {
@@ -59,12 +68,12 @@ export function PlayerCheckoutSheet({
     try {
       await checkout.mutateAsync({
         sessionId: session.id,
-        chipsOut: Number(chips),
-        reimbursements: reimb
-          .filter((r) => r.category.trim() && Number(r.amount) > 0)
-          .map((r) => ({ category: r.category.trim(), amount: Number(r.amount) })),
-        hourlyReturn,
+        chipsOut: chipsN,
+        reimbursements: uberAmt > 0 ? [{ category: "uber", amount: uberAmt }] : [],
+        hourlyReturn: hourlyOn,
         hourlyRate: Number(hourlyRate) || 0,
+        pctRebate: pctOn,
+        pctRate: Number(pctRate) || 0,
         checkinAt: new Date(checkinLocal).toISOString(),
         checkoutAt: new Date(checkoutLocal).toISOString(),
       });
@@ -93,7 +102,7 @@ export function PlayerCheckoutSheet({
         </header>
 
         <p className="text-sm text-slate-500">
-          {session.player.name} · {money(session.buyInTotal)} bought in
+          {session.player.name} · {money(buyIn)} bought in
         </p>
 
         <label className="block space-y-1">
@@ -107,45 +116,7 @@ export function PlayerCheckoutSheet({
           />
         </label>
 
-        <div className="space-y-2">
-          <span className="text-xs font-medium uppercase tracking-wide text-slate-400">
-            Reimbursements (optional)
-          </span>
-          {reimb.map((r, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <input
-                value={r.category}
-                onChange={(e) => patch(i, { category: e.target.value })}
-                placeholder="e.g. Uber"
-                className="input flex-1"
-              />
-              <input
-                value={r.amount}
-                onChange={(e) => patch(i, { amount: e.target.value })}
-                inputMode="numeric"
-                placeholder="$"
-                className="input w-24"
-              />
-              <button
-                onClick={() => setReimb((rows) => rows.filter((_, j) => j !== i))}
-                className="px-1 text-slate-400"
-                aria-label="Remove"
-              >
-                ✕
-              </button>
-            </div>
-          ))}
-          <button
-            onClick={() =>
-              setReimb((rows) => [...rows, { category: "", amount: "" }])
-            }
-            className="min-h-tap w-full rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700"
-          >
-            + Add reimbursement
-          </button>
-        </div>
-
-        <div className="space-y-2">
+        <div className="space-y-1">
           <span className="label">Time at table</span>
           <div className="flex gap-2">
             <label className="flex-1 space-y-1">
@@ -167,40 +138,54 @@ export function PlayerCheckoutSheet({
               />
             </label>
           </div>
-          <label className="flex items-center justify-between pt-1">
-            <span className="text-sm font-medium">
-              Time comp{" "}
-              <span className="text-slate-400">
-                ({ceilHours}h, rounded up)
-              </span>
-            </span>
-            <input
-              type="checkbox"
-              checked={hourlyReturn}
-              onChange={(e) => setHourlyReturn(e.target.checked)}
-              className="h-5 w-5 accent-violet-600"
-            />
-          </label>
-          {hourlyReturn && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-slate-500">Rate $/hr</span>
-              <input
-                value={hourlyRate}
-                onChange={(e) => setHourlyRate(e.target.value)}
-                inputMode="numeric"
-                className="input w-24"
-              />
-              <span className="ml-auto text-sm font-semibold text-emerald-600">
-                {ceilHours}h × {money(Number(hourlyRate) || 0)} = +{money(comp)}
-              </span>
-            </div>
-          )}
         </div>
 
-        <div className="rounded-2xl bg-slate-100 p-4">
-          <div className="flex items-center justify-between text-sm text-slate-500">
-            <span>Net (paid to player)</span>
-          </div>
+        {/* Rebates & reimbursements */}
+        <div className="space-y-2">
+          <span className="label">Rebates & reimbursements</span>
+
+          <RebateRow
+            label="Hourly rebate"
+            hint={`${ceilHours}h, rounded up`}
+            checked={hourlyOn}
+            onToggle={setHourlyOn}
+            amount={hourlyAmt}
+          >
+            <RateField
+              prefix="$/hr"
+              value={hourlyRate}
+              onChange={setHourlyRate}
+            />
+          </RebateRow>
+
+          <RebateRow
+            label="Percentage rebate"
+            hint={underWater ? `of ${money(loss)} loss` : "only when under water"}
+            checked={pctOn}
+            disabled={!underWater}
+            onToggle={setPctOn}
+            amount={pctAmt}
+          >
+            <RateField prefix="%" value={pctRate} onChange={setPctRate} />
+          </RebateRow>
+
+          <RebateRow
+            label="Uber"
+            checked={uberOn}
+            onToggle={setUberOn}
+            amount={uberAmt}
+          >
+            <RateField
+              prefix="$"
+              value={uberAmount}
+              onChange={setUberAmount}
+              placeholder="amount"
+            />
+          </RebateRow>
+        </div>
+
+        <div className="rounded-2xl bg-violet-50 p-4">
+          <div className="text-sm text-slate-500">Net (paid to player)</div>
           <div
             className={`text-3xl font-bold ${
               net >= 0 ? "text-emerald-600" : "text-red-500"
@@ -209,14 +194,88 @@ export function PlayerCheckoutSheet({
             {money(net)}
           </div>
           <p className="mt-1 text-xs text-slate-400">
-            chips {money(Number(chips) || 0)} − buy-ins{" "}
-            {money(session.buyInTotal)} + reimb {money(reimbTotal)}
-            {comp > 0 ? ` + time ${money(comp)}` : ""}
+            chips {money(chipsN)} − buy-ins {money(buyIn)}
+            {hourlyAmt ? ` + hourly ${money(hourlyAmt)}` : ""}
+            {pctAmt ? ` + ${pctRate}% ${money(pctAmt)}` : ""}
+            {uberAmt ? ` + uber ${money(uberAmt)}` : ""}
           </p>
         </div>
 
         {error && <p className="text-sm text-amber-600">{error}</p>}
       </div>
     </div>
+  );
+}
+
+function RebateRow({
+  label,
+  hint,
+  checked,
+  disabled,
+  onToggle,
+  amount,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  checked: boolean;
+  disabled?: boolean;
+  onToggle: (v: boolean) => void;
+  amount: number;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className={`rounded-xl border p-3 ${
+        checked ? "border-violet-200 bg-violet-50/40" : "border-slate-200 bg-white"
+      } ${disabled ? "opacity-50" : ""}`}
+    >
+      <label className="flex items-center justify-between">
+        <span className="text-sm font-medium">
+          {label}{" "}
+          {hint && <span className="text-xs text-slate-400">({hint})</span>}
+        </span>
+        <input
+          type="checkbox"
+          checked={checked}
+          disabled={disabled}
+          onChange={(e) => onToggle(e.target.checked)}
+          className="h-5 w-5 accent-violet-600"
+        />
+      </label>
+      {checked && !disabled && (
+        <div className="mt-2 flex items-center gap-2">
+          {children}
+          <span className="ml-auto text-sm font-semibold text-emerald-600">
+            +{money(amount)}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RateField({
+  prefix,
+  value,
+  onChange,
+  placeholder,
+}: {
+  prefix: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <span className="flex items-center gap-1 text-sm text-slate-500">
+      {prefix}
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        inputMode="numeric"
+        placeholder={placeholder}
+        className="input w-20 py-1.5 text-center"
+      />
+    </span>
   );
 }

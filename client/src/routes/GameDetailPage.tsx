@@ -6,6 +6,7 @@ import { AddTableSheet } from "@/features/games/AddTableSheet";
 import { EditSessionSheet } from "@/features/games/EditSessionSheet";
 import { HostCosts } from "@/features/afterGame/HostCosts";
 import { Insurance } from "@/features/afterGame/Insurance";
+import { PaymentsPanel } from "@/features/afterGame/PaymentsPanel";
 import { GameStatsPanel } from "@/features/stats/GameStatsPanel";
 import { StatusPill } from "./GamesPage";
 import {
@@ -17,7 +18,7 @@ import {
 } from "@/lib/format";
 import type { TableSummary } from "@/features/games/api";
 
-type Tab = "tables" | "cost" | "stats";
+type Tab = "tables" | "costs" | "payments";
 
 export function GameDetailPage() {
   const { id } = useParams();
@@ -67,8 +68,8 @@ export function GameDetailPage() {
         {(
           [
             ["tables", "Tables"],
-            ["cost", "Cost"],
-            ["stats", "Stats"],
+            ["costs", "Costs & Stats"],
+            ["payments", "Payments"],
           ] as const
         ).map(([key, labelText]) => (
           <button
@@ -113,16 +114,15 @@ export function GameDetailPage() {
         </div>
       )}
 
-      {tab === "cost" && (
+      {tab === "costs" && (
         <div className="space-y-5">
           <HostCosts gameId={gameId} />
           <Insurance gameId={gameId} />
+          <GameStatsPanel gameId={gameId} tables={game.tables} />
         </div>
       )}
 
-      {tab === "stats" && (
-        <GameStatsPanel gameId={gameId} tables={game.tables} />
-      )}
+      {tab === "payments" && <PaymentsPanel gameId={gameId} />}
 
       {adding && (
         <AddTableSheet gameId={gameId} onClose={() => setAdding(false)} />

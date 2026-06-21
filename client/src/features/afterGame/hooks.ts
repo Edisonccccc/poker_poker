@@ -10,6 +10,7 @@ import {
   updateInsurance,
   type InsuranceInput,
 } from "./api";
+import { addPayment, type PaymentDirection } from "@/features/sessions/api";
 
 const key = (gameId: string) => ["settlement", gameId];
 
@@ -75,6 +76,19 @@ export function useDeleteInsurance(gameId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => deleteInsurance(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: key(gameId) }),
+  });
+}
+
+/** Record a player payment (attached to one of their sessions) from the session. */
+export function useRecordPayment(gameId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (args: {
+      sessionId: string;
+      direction: PaymentDirection;
+      amount: number;
+    }) => addPayment(args.sessionId, args.direction, args.amount),
     onSuccess: () => qc.invalidateQueries({ queryKey: key(gameId) }),
   });
 }

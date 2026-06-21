@@ -28,6 +28,9 @@ export interface PlayerSession {
   comp: number;
   hourlyReturn: boolean;
   hourlyRate: string;
+  pctRebate: boolean;
+  pctRate: string;
+  pctRebateAmount: number;
   net: number | null;
   entries: LedgerEntry[];
 }

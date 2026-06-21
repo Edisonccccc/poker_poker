@@ -52,7 +52,7 @@ export function Insurance({ gameId }: { gameId: string }) {
       {rows.length > 0 && (
         <ul className="space-y-2">
           {rows.map((r) => (
-            <li key={r.id} className="space-y-1 rounded-xl bg-slate-100 p-3">
+            <li key={r.id} className="space-y-1 rounded-xl bg-slate-50 p-3">
               <div className="flex items-center justify-between text-sm font-medium">
                 <span className="truncate">{r.playerName ?? "Player"}</span>
                 <button

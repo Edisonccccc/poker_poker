@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../db";
 import { requireAuth } from "../auth/middleware";
+import { sessionComp, sessionPctRebate } from "../lib/comp";
 
 export const statsRouter = Router();
 statsRouter.use(requireAuth);
@@ -19,6 +20,12 @@ statsRouter.get("/stats/overview", async (req, res) => {
         select: {
           status: true,
           chipsOut: true,
+          checkinAt: true,
+          checkoutAt: true,
+          hourlyReturn: true,
+          hourlyRate: true,
+          pctRebate: true,
+          pctRate: true,
           ledger: { select: { type: true, amount: true } },
         },
       }),
@@ -39,13 +46,19 @@ statsRouter.get("/stats/overview", async (req, res) => {
   let cashIn = 0;
   let reimbursements = 0;
   let playerPayout = 0;
+  let rebates = 0; // hourly + percentage rebates host returns to players
   for (const s of playerSessions as any[]) {
+    let buyIn = 0;
     for (const l of s.ledger) {
-      if (l.type === "buy_in") cashIn += num(l.amount);
-      else if (l.type === "reimbursement") reimbursements += num(l.amount);
+      if (l.type === "buy_in") {
+        cashIn += num(l.amount);
+        buyIn += num(l.amount);
+      } else if (l.type === "reimbursement") reimbursements += num(l.amount);
     }
-    if (s.status === "checked_out" && s.chipsOut !== null)
+    if (s.status === "checked_out" && s.chipsOut !== null) {
       playerPayout += num(s.chipsOut);
+      rebates += sessionComp(s) + sessionPctRebate(s, buyIn, num(s.chipsOut));
+    }
   }
   const dealerPayout = (dealerSessions as any[]).reduce(
     (a, d) => a + num(d.tipsTotal),
@@ -69,7 +82,8 @@ statsRouter.get("/stats/overview", async (req, res) => {
     dealerPayout -
     reimbursements +
     insurancePremiums -
-    insurancePayouts;
+    insurancePayouts -
+    rebates;
 
   res.json({
     games,

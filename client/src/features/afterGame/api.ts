@@ -7,6 +7,9 @@ export interface SettlementPlayer {
   status: "active" | "checked_out";
   buyInTotal: number;
   reimburseTotal: number;
+  comp: number;
+  pctRebate: number;
+  paid: number; // host net paid to player so far (sent − received)
   chipsOut: number | null;
   net: number | null;
 }
@@ -52,6 +55,7 @@ export interface SettlementTotals {
   insurancePremiums: number;
   insurancePayouts: number;
   hourlyComp: number;
+  pctRebate: number;
   hostTake: number;
   hostNet: number;
 }

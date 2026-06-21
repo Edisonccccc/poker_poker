@@ -10,7 +10,6 @@ export function PlayerHistorySheet({
   group,
   onBuyIn,
   onCheckout,
-  onPayment,
   onCheckInAgain,
   onRemoveSession,
   onClose,
@@ -18,7 +17,6 @@ export function PlayerHistorySheet({
   group: PlayerGroup;
   onBuyIn: (s: PlayerSession) => void;
   onCheckout: (s: PlayerSession) => void;
-  onPayment: (s: PlayerSession) => void;
   onCheckInAgain: () => void;
   onRemoveSession: (id: string) => void;
   onClose: () => void;
@@ -96,15 +94,6 @@ export function PlayerHistorySheet({
           )}
         </div>
 
-        <div className="px-4 pb-2">
-          <button
-            onClick={() => onPayment(group.active ?? latest)}
-            className="btn-ghost w-full text-sm"
-          >
-            Record payment (sent / received)
-          </button>
-        </div>
-
         {/* History (scrollable) */}
         <div
           className="flex-1 space-y-3 overflow-y-auto p-4 pt-2"
@@ -112,7 +101,7 @@ export function PlayerHistorySheet({
         >
           <div className="label">History</div>
           {group.sessions.map((s, i) => (
-            <div key={s.id} className="rounded-xl bg-slate-100 p-3 text-sm">
+            <div key={s.id} className="rounded-xl bg-slate-50 p-3 text-sm">
               <div className="mb-1 flex items-center justify-between">
                 <span className="font-medium">
                   Visit {i + 1}

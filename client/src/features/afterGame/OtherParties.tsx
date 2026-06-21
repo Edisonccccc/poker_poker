@@ -27,7 +27,7 @@ export function OtherParties({ gameId }: { gameId: string }) {
           {others.map((o) => (
             <li
               key={o.id}
-              className="flex items-center justify-between rounded-xl bg-slate-100 px-3 py-2 text-sm"
+              className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-sm"
             >
               <span className="truncate">{o.label}</span>
               <span className="flex items-center gap-3">

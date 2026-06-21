@@ -7,7 +7,7 @@ import {
   getOwnedPlayerSession,
   getOwnedDealerSession,
 } from "../lib/ownership";
-import { sessionComp } from "../lib/comp";
+import { sessionComp, sessionPctRebate } from "../lib/comp";
 
 export const sessionsRouter = Router();
 sessionsRouter.use(requireAuth);
@@ -29,6 +29,8 @@ const playerCheckoutSchema = z.object({
     .optional(),
   hourlyReturn: z.boolean().optional(),
   hourlyRate: z.number().nonnegative().optional(),
+  pctRebate: z.boolean().optional(),
+  pctRate: z.number().nonnegative().optional(),
   checkinAt: z.string().optional(),
   checkoutAt: z.string().optional(),
 });
@@ -46,6 +48,8 @@ const PLAYER_SELECT = {
   chipsOut: true,
   hourlyReturn: true,
   hourlyRate: true,
+  pctRebate: true,
+  pctRate: true,
   player: { select: { id: true, name: true, photoId: true } },
   ledger: {
     select: { id: true, type: true, amount: true, category: true, occurredAt: true },
@@ -72,8 +76,10 @@ function playerRow(s: any) {
   const reimburseTotal = sum("reimbursement");
   const comp = sessionComp(s);
   const checkedOut = s.status === "checked_out" && s.chipsOut !== null;
+  const chipsOut = checkedOut ? Number(s.chipsOut) : 0;
+  const pct = checkedOut ? sessionPctRebate(s, buyInTotal, chipsOut) : 0;
   const net = checkedOut
-    ? Number(s.chipsOut) - buyInTotal + reimburseTotal + comp
+    ? chipsOut - buyInTotal + reimburseTotal + comp + pct
     : null;
   const entries = s.ledger.map((l: any) => ({
     id: l.id,
@@ -83,7 +89,7 @@ function playerRow(s: any) {
     occurredAt: l.occurredAt,
   }));
   const { ledger, ...rest } = s;
-  return { ...rest, buyInTotal, reimburseTotal, comp, net, entries };
+  return { ...rest, buyInTotal, reimburseTotal, comp, pctRebateAmount: pct, net, entries };
 }
 
 // ── Player sessions ───────────────────────────────────────────────────────────
@@ -240,6 +246,12 @@ sessionsRouter.post("/player-sessions/:id/checkout", async (req, res) => {
           : {}),
         ...(parsed.data.hourlyRate !== undefined
           ? { hourlyRate: parsed.data.hourlyRate }
+          : {}),
+        ...(parsed.data.pctRebate !== undefined
+          ? { pctRebate: parsed.data.pctRebate }
+          : {}),
+        ...(parsed.data.pctRate !== undefined
+          ? { pctRate: parsed.data.pctRate }
           : {}),
       },
     }),

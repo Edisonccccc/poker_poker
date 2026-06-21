@@ -3,7 +3,7 @@ import { z } from "zod";
 import { prisma } from "../db";
 import { requireAuth } from "../auth/middleware";
 import { getOwnedGame } from "../lib/ownership";
-import { sessionComp } from "../lib/comp";
+import { sessionComp, sessionPctRebate } from "../lib/comp";
 
 export const afterGameRouter = Router();
 afterGameRouter.use(requireAuth);
@@ -156,8 +156,10 @@ afterGameRouter.get("/games/:gameId/settlement", async (req, res) => {
         checkoutAt: true,
         hourlyReturn: true,
         hourlyRate: true,
+        pctRebate: true,
+        pctRate: true,
         player: { select: { id: true, name: true, photoId: true } },
-        ledger: { select: { type: true, amount: true } },
+        ledger: { select: { type: true, amount: true, category: true } },
       },
     }),
     prisma.dealerSession.findMany({
@@ -211,9 +213,18 @@ afterGameRouter.get("/games/:gameId/settlement", async (req, res) => {
       .reduce((a: number, l: any) => a + num(l.amount), 0);
     const checkedOut = s.status === "checked_out" && s.chipsOut !== null;
     const comp = checkedOut ? sessionComp(s) : 0;
+    const pct = checkedOut
+      ? sessionPctRebate(s, buyInTotal, num(s.chipsOut))
+      : 0;
     const net = checkedOut
-      ? num(s.chipsOut) - buyInTotal + reimburseTotal + comp
+      ? num(s.chipsOut) - buyInTotal + reimburseTotal + comp + pct
       : null;
+    const sent = s.ledger
+      .filter((l: any) => l.type === "payment" && l.category === "sent")
+      .reduce((a: number, l: any) => a + num(l.amount), 0);
+    const received = s.ledger
+      .filter((l: any) => l.type === "payment" && l.category === "received")
+      .reduce((a: number, l: any) => a + num(l.amount), 0);
     return {
       sessionId: s.id,
       tableId: s.tableId,
@@ -222,6 +233,8 @@ afterGameRouter.get("/games/:gameId/settlement", async (req, res) => {
       buyInTotal,
       reimburseTotal,
       comp,
+      pctRebate: pct,
+      paid: sent - received, // host net paid to player so far
       chipsOut: checkedOut ? num(s.chipsOut) : null,
       net,
     };
@@ -263,6 +276,10 @@ afterGameRouter.get("/games/:gameId/settlement", async (req, res) => {
     0,
   );
   const hourlyComp = players.reduce((a: number, p: any) => a + (p.comp ?? 0), 0);
+  const pctRebateTotal = players.reduce(
+    (a: number, p: any) => a + (p.pctRebate ?? 0),
+    0,
+  );
   const hostTake =
     cashIn -
     playerPayout -
@@ -270,7 +287,8 @@ afterGameRouter.get("/games/:gameId/settlement", async (req, res) => {
     reimbursements +
     insurancePremiums -
     insurancePayouts -
-    hourlyComp;
+    hourlyComp -
+    pctRebateTotal;
   const hostNet = hostTake - hostCostsTotal;
 
   res.json({
@@ -306,6 +324,7 @@ afterGameRouter.get("/games/:gameId/settlement", async (req, res) => {
       insurancePremiums,
       insurancePayouts,
       hourlyComp,
+      pctRebate: pctRebateTotal,
       hostTake,
       hostNet,
     },

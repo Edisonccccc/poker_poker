@@ -10,6 +10,8 @@ export function useCheckoutPlayer(tableId: string) {
       reimbursements: ReimbursementInput[];
       hourlyReturn?: boolean;
       hourlyRate?: number;
+      pctRebate?: boolean;
+      pctRate?: number;
       checkinAt?: string;
       checkoutAt?: string;
     }) =>
@@ -18,6 +20,8 @@ export function useCheckoutPlayer(tableId: string) {
         reimbursements: args.reimbursements,
         hourlyReturn: args.hourlyReturn,
         hourlyRate: args.hourlyRate,
+        pctRebate: args.pctRebate,
+        pctRate: args.pctRate,
         checkinAt: args.checkinAt,
         checkoutAt: args.checkoutAt,
       }),
