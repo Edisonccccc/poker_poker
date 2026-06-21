@@ -23,7 +23,7 @@ export function HostCosts({ gameId }: { gameId: string }) {
   }
 
   return (
-    <section className="space-y-2">
+    <section className="card space-y-3">
       <h2 className="label">Host costs</h2>
       {costs.length > 0 && (
         <ul className="space-y-1">

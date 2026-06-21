@@ -22,16 +22,20 @@ export function PokerTable({
 }) {
   return (
     <div className="relative mx-auto w-full" style={{ aspectRatio: "4 / 5" }}>
+      {/* wooden rail + felt */}
       <div
-        className="absolute inset-[6%] rounded-[48%] border-4 border-violet-200"
+        className="absolute inset-[6%] rounded-[48%] border-[7px] border-[#5b3b22]"
         style={{
           background:
-            "radial-gradient(ellipse at 50% 40%, #ffffff 0%, #f5f3ff 55%, #ede9fe 100%)",
-          boxShadow: "0 10px 30px rgba(124,58,237,0.12)",
+            "radial-gradient(ellipse at 50% 42%, #1f9d61 0%, #14894f 48%, #0a6b3c 100%)",
+          boxShadow:
+            "0 14px 34px rgba(10,80,45,0.30), inset 0 0 55px rgba(0,0,0,0.35)",
         }}
       >
+        {/* inner betting line */}
+        <div className="absolute inset-[12%] rounded-[48%] border border-white/20" />
         <div className="absolute inset-0 flex items-center justify-center px-6 text-center">
-          <span className="text-sm font-semibold text-violet-500/80">
+          <span className="text-sm font-semibold text-white/85">
             {centerLabel}
           </span>
         </div>

@@ -37,7 +37,7 @@ export function GameStatsPanel({
         <Row label="Host net" value={t.hostNet} bold big />
       </section>
 
-      <section className="space-y-2">
+      <section className="card space-y-2">
         <h2 className="label">Leaderboard</h2>
         {leaderboard.length === 0 ? (
           <p className="text-sm text-slate-400">No players yet.</p>
@@ -65,7 +65,7 @@ export function GameStatsPanel({
       </section>
 
       {data.dealers.length > 0 && (
-        <section className="space-y-2">
+        <section className="card space-y-2">
           <h2 className="label">Dealers</h2>
           <ul className="space-y-1">
             {data.dealers.map((d) => (
@@ -85,20 +85,20 @@ export function GameStatsPanel({
 
       <OtherParties gameId={gameId} />
 
-      <section className="space-y-2">
+      <section className="card space-y-2">
         <h2 className="label">By table</h2>
-        <ul className="space-y-2">
+        <ul className="space-y-1">
           {tables.map((tbl) => {
             const ps = data.players.filter((p) => p.tableId === tbl.id);
             const cashIn = ps.reduce((a, p) => a + p.buyInTotal, 0);
             const payout = ps.reduce((a, p) => a + (p.chipsOut ?? 0), 0);
             return (
-              <li key={tbl.id} className="card">
-                <div className="font-medium">
+              <li key={tbl.id} className="rounded-xl bg-slate-100 px-3 py-2">
+                <div className="text-sm font-medium">
                   {gameTypeLabel(tbl.type)}
                   {tbl.stakes ? ` ${tbl.stakes}` : ""}
                 </div>
-                <div className="mt-1 text-xs text-slate-500">
+                <div className="mt-0.5 text-xs text-slate-500">
                   {ps.length} player{ps.length === 1 ? "" : "s"} ·{" "}
                   {money(cashIn)} in · {money(payout)} out
                 </div>

@@ -122,7 +122,7 @@ export function TableDetailPage() {
       </div>
 
       {dealers.data && dealers.data.length > 0 && (
-        <section className="space-y-2">
+        <section className="card space-y-2">
           <h2 className="label">Dealers</h2>
           <ul className="space-y-2">
             {dealers.data.map((s) => (

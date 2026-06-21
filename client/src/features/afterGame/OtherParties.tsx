@@ -20,7 +20,7 @@ export function OtherParties({ gameId }: { gameId: string }) {
   }
 
   return (
-    <section className="space-y-2">
+    <section className="card space-y-3">
       <h2 className="label">Other parties</h2>
       {others.length > 0 && (
         <ul className="space-y-1">
