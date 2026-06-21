@@ -11,10 +11,15 @@
     "db:migrate": "npm -w server run db:migrate",
     "db:deploy": "npm -w server run db:deploy",
     "db:sql": "npm -w server run db:sql",
+    "db:deploy:prod": "npm -w server run db:deploy:prod",
+    "db:sql:prod": "npm -w server run db:sql:prod",
     "db:studio": "npm -w server run db:studio",
     "prisma:generate": "npm -w server run prisma:generate"
   },
   "devDependencies": {
     "concurrently": "^9.0.1"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

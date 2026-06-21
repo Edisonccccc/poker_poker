@@ -11,7 +11,9 @@
     "db:migrate": "dotenv -e ../.env -- prisma migrate dev",
     "db:deploy": "dotenv -e ../.env -- prisma migrate deploy",
     "db:sql": "dotenv -e ../.env -- prisma db execute --file prisma/sql/constraints_and_views.sql --schema prisma/schema.prisma",
-    "db:studio": "dotenv -e ../.env -- prisma studio"
+    "db:studio": "dotenv -e ../.env -- prisma studio",
+    "db:deploy:prod": "prisma migrate deploy",
+    "db:sql:prod": "prisma db execute --file prisma/sql/constraints_and_views.sql --schema prisma/schema.prisma"
   },
   "dependencies": {
     "@prisma/client": "^5.20.0",
