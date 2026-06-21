@@ -9,20 +9,16 @@ import type { GameType } from "./api";
 interface DenomDraft {
   color: string;
   value: string;
-  faceUrl: string | null;
-  facePhotoId: string | null;
-  edgeUrl: string | null;
-  edgePhotoId: string | null;
+  photoUrl: string | null;
+  photoId: string | null;
   scanning: boolean;
 }
 
 const emptyDenom = (): DenomDraft => ({
   color: "",
   value: "",
-  faceUrl: null,
-  facePhotoId: null,
-  edgeUrl: null,
-  edgePhotoId: null,
+  photoUrl: null,
+  photoId: null,
   scanning: false,
 });
 
@@ -47,16 +43,16 @@ export function AddTableSheet({
     setDenoms((rows) => rows.map((r, j) => (j === i ? { ...r, ...patch } : r)));
   }
 
-  // Face photo: upload as reference, then auto-fill color + value via the model.
-  async function onFace(i: number, e: ChangeEvent<HTMLInputElement>) {
+  // Photograph a chip → store as reference + auto-fill color & value.
+  async function onScan(i: number, e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     setError(null);
     try {
       const dataUrl = await fileToDownscaledDataUrl(file);
-      patchDenom(i, { faceUrl: dataUrl, scanning: true });
+      patchDenom(i, { photoUrl: dataUrl, scanning: true });
       const photoId = await uploadPhoto(dataUrl);
-      patchDenom(i, { facePhotoId: photoId });
+      patchDenom(i, { photoId });
       try {
         const id = await identifyChip(photoId);
         patchDenom(i, {
@@ -66,7 +62,6 @@ export function AddTableSheet({
         });
       } catch {
         patchDenom(i, { scanning: false });
-        setError("Couldn't auto-read that chip — enter color/value manually.");
       }
     } catch {
       patchDenom(i, { scanning: false });
@@ -74,25 +69,10 @@ export function AddTableSheet({
     }
   }
 
-  // Edge photo: side view, used to recognize chips inside a stack when counting.
-  async function onEdge(i: number, e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setError(null);
-    try {
-      const dataUrl = await fileToDownscaledDataUrl(file);
-      patchDenom(i, { edgeUrl: dataUrl });
-      const photoId = await uploadPhoto(dataUrl);
-      patchDenom(i, { edgePhotoId: photoId });
-    } catch {
-      setError("Couldn't read that image.");
-    }
-  }
-
   async function save() {
     const clean = denoms.filter((d) => d.color.trim() && d.value !== "");
     if (clean.length === 0) {
-      setError("Add at least one chip denomination.");
+      setError("Add at least one chip color.");
       return;
     }
     setBusy(true);
@@ -101,14 +81,11 @@ export function AddTableSheet({
       const denominations = [];
       for (const d of clean) {
         const refPhotoId =
-          d.facePhotoId ?? (d.faceUrl ? await uploadPhoto(d.faceUrl) : null);
-        const edgePhotoId =
-          d.edgePhotoId ?? (d.edgeUrl ? await uploadPhoto(d.edgeUrl) : null);
+          d.photoId ?? (d.photoUrl ? await uploadPhoto(d.photoUrl) : null);
         denominations.push({
           color: d.color.trim(),
           value: Number(d.value),
           refPhotoId,
-          edgePhotoId,
         });
       }
       await add.mutateAsync({
@@ -127,8 +104,8 @@ export function AddTableSheet({
   }
 
   return (
-    <div className="fixed inset-0 z-20 flex flex-col bg-felt-dark">
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 overflow-y-auto px-4 py-6">
+    <div className="sheet">
+      <div className="sheet-body">
         <header className="flex items-center justify-between">
           <button onClick={onClose} className="text-sm text-white/60">
             Cancel
@@ -144,16 +121,14 @@ export function AddTableSheet({
         </header>
 
         <div className="space-y-1">
-          <span className="text-xs font-medium uppercase tracking-wide text-white/50">
-            Game type
-          </span>
+          <span className="label">Game type</span>
           <div className="flex gap-2">
             {TYPES.map((t) => (
               <button
                 key={t}
                 onClick={() => setType(t)}
-                className={`min-h-tap flex-1 rounded-xl px-3 py-2 text-sm font-semibold ${
-                  type === t ? "bg-felt-light" : "bg-white/10 text-white/60"
+                className={`min-h-tap flex-1 rounded-xl px-3 py-2 text-sm font-semibold transition ${
+                  type === t ? "bg-felt-light" : "bg-white/[0.08] text-white/60"
                 }`}
               >
                 {gameTypeLabel(t)}
@@ -163,9 +138,7 @@ export function AddTableSheet({
         </div>
 
         <label className="block space-y-1">
-          <span className="text-xs font-medium uppercase tracking-wide text-white/50">
-            Stakes (optional)
-          </span>
+          <span className="label">Stakes (optional)</span>
           <input
             value={stakes}
             onChange={(e) => setStakes(e.target.value)}
@@ -175,9 +148,7 @@ export function AddTableSheet({
         </label>
 
         <label className="block space-y-1">
-          <span className="text-xs font-medium uppercase tracking-wide text-white/50">
-            Label (optional)
-          </span>
+          <span className="label">Label (optional)</span>
           <input
             value={label}
             onChange={(e) => setLabel(e.target.value)}
@@ -187,59 +158,61 @@ export function AddTableSheet({
         </label>
 
         <div className="space-y-3">
-          <span className="text-xs font-medium uppercase tracking-wide text-white/50">
-            Chip denominations
-          </span>
+          <span className="label">Chip colors</span>
           <p className="text-xs text-white/45">
-            Scan the <b>face</b> to auto-fill color &amp; value. Add an{" "}
-            <b>edge</b> photo (chip on its side) so counting can recognize chips
-            inside a stack.
+            Tap 📷 to scan a chip — it auto-fills the color &amp; value.
           </p>
           {denoms.map((d, i) => (
-            <div key={i} className="space-y-2 rounded-2xl bg-white/5 p-3">
-              <div className="flex items-center gap-2">
-                <input
-                  value={d.color}
-                  onChange={(e) => patchDenom(i, { color: e.target.value })}
-                  placeholder="Color"
-                  className="input flex-1"
-                />
-                <input
-                  value={d.value}
-                  onChange={(e) => patchDenom(i, { value: e.target.value })}
-                  placeholder="Value"
-                  inputMode="numeric"
-                  className="input w-24"
-                />
-                {denoms.length > 1 && (
-                  <button
-                    onClick={() =>
-                      setDenoms((rows) => rows.filter((_, j) => j !== i))
-                    }
-                    className="px-1 text-white/40"
-                    aria-label="Remove"
-                  >
-                    ✕
-                  </button>
+            <div key={i} className="flex items-center gap-2">
+              <label className="relative flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-xl bg-white/[0.08] text-xs text-white/60">
+                {d.scanning ? (
+                  "…"
+                ) : d.photoUrl ? (
+                  <img
+                    src={d.photoUrl}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  "📷"
                 )}
-              </div>
-              <div className="flex gap-2">
-                <PhotoButton
-                  label={d.scanning ? "Scanning…" : "Face"}
-                  preview={d.faceUrl}
-                  onPick={(e) => onFace(i, e)}
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={(e) => onScan(i, e)}
+                  className="hidden"
                 />
-                <PhotoButton
-                  label="Edge"
-                  preview={d.edgeUrl}
-                  onPick={(e) => onEdge(i, e)}
-                />
-              </div>
+              </label>
+              <input
+                value={d.color}
+                onChange={(e) => patchDenom(i, { color: e.target.value })}
+                placeholder="Color"
+                className="input flex-1"
+              />
+              <input
+                value={d.value}
+                onChange={(e) => patchDenom(i, { value: e.target.value })}
+                placeholder="$"
+                inputMode="numeric"
+                className="input w-20"
+              />
+              {denoms.length > 1 && (
+                <button
+                  onClick={() =>
+                    setDenoms((rows) => rows.filter((_, j) => j !== i))
+                  }
+                  className="px-1 text-white/40"
+                  aria-label="Remove"
+                >
+                  ✕
+                </button>
+              )}
             </div>
           ))}
           <button
             onClick={() => setDenoms((rows) => [...rows, emptyDenom()])}
-            className="min-h-tap w-full rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white/80"
+            className="btn-ghost w-full text-sm"
           >
             + Add color
           </button>
@@ -248,33 +221,5 @@ export function AddTableSheet({
         {error && <p className="text-sm text-amber-400">{error}</p>}
       </div>
     </div>
-  );
-}
-
-function PhotoButton({
-  label,
-  preview,
-  onPick,
-}: {
-  label: string;
-  preview: string | null;
-  onPick: (e: ChangeEvent<HTMLInputElement>) => void;
-}) {
-  return (
-    <label className="flex min-h-tap flex-1 cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-xl bg-white/10 px-3 py-2 text-sm font-semibold text-white/75">
-      {preview ? (
-        <img src={preview} alt="" className="h-8 w-8 rounded object-cover" />
-      ) : (
-        <span>📷</span>
-      )}
-      <span>{label}</span>
-      <input
-        type="file"
-        accept="image/*"
-        capture="environment"
-        onChange={onPick}
-        className="hidden"
-      />
-    </label>
   );
 }

@@ -1,6 +1,5 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
-import { HomePage } from "@/routes/HomePage";
 import { LoginPage } from "@/routes/LoginPage";
 import { GamesPage } from "@/routes/GamesPage";
 import { GameDetailPage } from "@/routes/GameDetailPage";
@@ -15,14 +14,14 @@ export const router = createBrowserRouter([
     path: "/",
     element: <AppLayout />,
     children: [
-      { index: true, element: <HomePage /> },
+      { index: true, element: <Navigate to="/games" replace /> },
       { path: "games", element: <GamesPage /> },
       { path: "games/:id", element: <GameDetailPage /> },
       { path: "tables/:id", element: <TableDetailPage /> },
       { path: "profiles", element: <ProfilesPage /> },
       { path: "stats", element: <StatsPage /> },
       { path: "admin", element: <AdminPage /> },
-      { path: "*", element: <Navigate to="/" replace /> },
+      { path: "*", element: <Navigate to="/games" replace /> },
     ],
   },
 ]);

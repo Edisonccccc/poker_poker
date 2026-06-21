@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { NumberPad } from "@/components/NumberPad";
-import { ChipCountSheet } from "@/features/chips/ChipCountSheet";
 import { useCheckoutDealer } from "./hooks";
 import type { DealerSession } from "@/features/sessions/api";
 import { money } from "@/lib/format";
@@ -17,7 +16,6 @@ export function DealerCheckoutSheet({
   const [tips, setTips] = useState(
     session.tipsTotal !== null ? String(session.tipsTotal) : "",
   );
-  const [counting, setCounting] = useState(false);
   const checkout = useCheckoutDealer(tableId);
 
   async function save() {
@@ -51,29 +49,10 @@ export function DealerCheckoutSheet({
           {tips ? money(tips) : <span className="text-white/30">$0</span>}
         </div>
 
-        <button
-          onClick={() => setCounting(true)}
-          className="min-h-tap w-full rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold"
-        >
-          📷 Count from photo
-        </button>
-
         <div className="mt-auto">
           <NumberPad value={tips} onChange={setTips} />
         </div>
       </div>
-
-      {counting && (
-        <ChipCountSheet
-          tableId={tableId}
-          title="Count tips"
-          onUse={(total) => {
-            setTips(String(total));
-            setCounting(false);
-          }}
-          onClose={() => setCounting(false)}
-        />
-      )}
     </div>
   );
 }

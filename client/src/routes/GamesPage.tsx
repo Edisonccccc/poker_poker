@@ -12,10 +12,7 @@ export function GamesPage() {
     <div className="space-y-4">
       <h1 className="text-2xl font-bold tracking-tight">Games</h1>
 
-      <button
-        onClick={() => setCreating(true)}
-        className="min-h-tap w-full rounded-xl bg-felt-light px-4 py-3 text-base font-semibold"
-      >
+      <button onClick={() => setCreating(true)} className="btn-primary w-full">
         + New game
       </button>
 
@@ -29,10 +26,8 @@ export function GamesPage() {
         <ul className="space-y-2">
           {data.map((g) => (
             <li key={g.id}>
-              <Link
-                to={`/games/${g.id}`}
-                className="block rounded-2xl bg-white/5 p-4"
-              >
+              <Link to={`/games/${g.id}`} className="card block active:bg-white/[0.07]">
+
                 <div className="flex items-center justify-between">
                   <span className="font-semibold">
                     {g.label || formatGameDate(g.gameDate)}
@@ -57,7 +52,7 @@ export function GamesPage() {
 export function StatusPill({ status }: { status: "open" | "closed" }) {
   return (
     <span
-      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+      className={`pill ${
         status === "open"
           ? "bg-emerald-500/20 text-emerald-300"
           : "bg-white/10 text-white/50"

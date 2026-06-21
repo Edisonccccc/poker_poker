@@ -2,26 +2,55 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer components {
-  .input {
-    @apply min-h-tap w-full rounded-xl bg-white/10 px-4 py-3 text-base text-white placeholder-white/30 outline-none focus:ring-2 focus:ring-felt-light;
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right)
+      env(safe-area-inset-bottom) env(safe-area-inset-left);
+    background: #0b1411;
+    color: white;
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI",
+      Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
-:root {
-  color-scheme: dark;
-}
-
-html,
-body,
-#root {
-  height: 100%;
-}
-
-body {
-  margin: 0;
-  /* respect iOS safe areas */
-  padding: env(safe-area-inset-top) env(safe-area-inset-right)
-    env(safe-area-inset-bottom) env(safe-area-inset-left);
-  -webkit-tap-highlight-color: transparent;
+@layer components {
+  .input {
+    @apply min-h-tap w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-base text-white placeholder-white/30 outline-none transition focus:border-felt-light/60 focus:ring-2 focus:ring-felt-light/40;
+  }
+  .label {
+    @apply text-xs font-medium uppercase tracking-wide text-white/45;
+  }
+  .card {
+    @apply rounded-2xl border border-white/10 bg-white/[0.04] p-4;
+  }
+  .btn {
+    @apply min-h-tap inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-base font-semibold transition active:scale-[0.97] disabled:opacity-50 disabled:active:scale-100;
+  }
+  .btn-primary {
+    @apply btn bg-felt-light text-white shadow-lg shadow-felt-light/20;
+  }
+  .btn-ghost {
+    @apply btn bg-white/[0.08] text-white;
+  }
+  .sheet {
+    @apply fixed inset-0 z-20 flex flex-col bg-felt-dark;
+  }
+  .sheet-body {
+    @apply mx-auto flex w-full max-w-md flex-1 flex-col gap-4 overflow-y-auto px-4 py-6;
+  }
+  .pill {
+    @apply rounded-full px-2 py-0.5 text-xs font-medium;
+  }
 }

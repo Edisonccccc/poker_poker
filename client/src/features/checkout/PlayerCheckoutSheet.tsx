@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useCheckoutPlayer } from "./hooks";
-import { ChipCountSheet } from "@/features/chips/ChipCountSheet";
 import type { PlayerSession } from "@/features/sessions/api";
 import { money } from "@/lib/format";
 
@@ -22,7 +21,6 @@ export function PlayerCheckoutSheet({
     session.chipsOut !== null ? String(session.chipsOut) : "",
   );
   const [reimb, setReimb] = useState<ReimbDraft[]>([]);
-  const [counting, setCounting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const checkout = useCheckoutPlayer(tableId);
 
@@ -75,26 +73,16 @@ export function PlayerCheckoutSheet({
           {session.player.name} · {money(session.buyInTotal)} bought in
         </p>
 
-        <div className="space-y-1">
-          <span className="text-xs font-medium uppercase tracking-wide text-white/50">
-            Chip count (cash out)
-          </span>
-          <div className="flex gap-2">
-            <input
-              value={chips}
-              onChange={(e) => setChips(e.target.value)}
-              inputMode="numeric"
-              placeholder="0"
-              className="input flex-1"
-            />
-            <button
-              onClick={() => setCounting(true)}
-              className="shrink-0 rounded-xl bg-white/10 px-4 text-sm font-semibold"
-            >
-              📷 Count
-            </button>
-          </div>
-        </div>
+        <label className="block space-y-1">
+          <span className="label">Chip count (cash out)</span>
+          <input
+            value={chips}
+            onChange={(e) => setChips(e.target.value)}
+            inputMode="numeric"
+            placeholder="0"
+            className="input"
+          />
+        </label>
 
         <div className="space-y-2">
           <span className="text-xs font-medium uppercase tracking-wide text-white/50">
@@ -153,18 +141,6 @@ export function PlayerCheckoutSheet({
 
         {error && <p className="text-sm text-amber-400">{error}</p>}
       </div>
-
-      {counting && (
-        <ChipCountSheet
-          tableId={tableId}
-          title="Count chips"
-          onUse={(total) => {
-            setChips(String(total));
-            setCounting(false);
-          }}
-          onClose={() => setCounting(false)}
-        />
-      )}
     </div>
   );
 }

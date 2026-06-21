@@ -89,11 +89,7 @@ export function LoginPage() {
 
           {error && <p className="text-sm text-amber-400">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={busy}
-            className="min-h-tap w-full rounded-xl bg-felt-light px-4 py-3 text-base font-semibold text-white disabled:opacity-50"
-          >
+          <button type="submit" disabled={busy} className="btn-primary w-full">
             {busy
               ? "Please wait…"
               : mode === "login"
@@ -138,9 +134,7 @@ function Field({
 }) {
   return (
     <label className="block space-y-1">
-      <span className="text-xs font-medium uppercase tracking-wide text-white/50">
-        {label}
-      </span>
+      <span className="label">{label}</span>
       <input
         type={type}
         value={value}
@@ -148,7 +142,7 @@ function Field({
         placeholder={placeholder}
         autoComplete={autoComplete}
         required={required}
-        className="min-h-tap w-full rounded-xl bg-white/10 px-4 py-3 text-base text-white placeholder-white/30 outline-none focus:ring-2 focus:ring-felt-light"
+        className="input"
       />
     </label>
   );
