@@ -14,7 +14,7 @@ import { money } from "@/lib/format";
  */
 export function Insurance({ gameId }: { gameId: string }) {
   const { data } = useSettlement(gameId);
-  const players = useProfiles("players");
+  const players = useProfiles("player");
   const add = useAddInsurance(gameId);
   const update = useUpdateInsurance(gameId);
   const del = useDeleteInsurance(gameId);

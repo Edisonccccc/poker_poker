@@ -6,42 +6,45 @@ import {
   listProfiles,
   updateProfile,
   type ProfileInput,
-  type ProfileKind,
+  type Role,
 } from "./api";
 
-export function useProfiles(kind: ProfileKind) {
-  return useQuery({ queryKey: [kind], queryFn: () => listProfiles(kind) });
+export function useProfiles(role?: Role) {
+  return useQuery({
+    queryKey: ["people", role ?? "all"],
+    queryFn: () => listProfiles(role),
+  });
 }
 
-export function useProfileDescriptors(kind: ProfileKind, enabled = true) {
+export function useProfileDescriptors(role?: Role, enabled = true) {
   return useQuery({
-    queryKey: [kind, "descriptors"],
-    queryFn: () => listDescriptors(kind),
+    queryKey: ["people", "descriptors", role ?? "all"],
+    queryFn: () => listDescriptors(role),
     enabled,
   });
 }
 
-export function useCreateProfile(kind: ProfileKind) {
+export function useCreateProfile() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: ProfileInput) => createProfile(kind, body),
-    onSuccess: () => qc.invalidateQueries({ queryKey: [kind] }),
+    mutationFn: (body: ProfileInput) => createProfile(body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["people"] }),
   });
 }
 
-export function useUpdateProfile(kind: ProfileKind) {
+export function useUpdateProfile() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (args: { id: string; body: Partial<ProfileInput> }) =>
-      updateProfile(kind, args.id, args.body),
-    onSuccess: () => qc.invalidateQueries({ queryKey: [kind] }),
+      updateProfile(args.id, args.body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["people"] }),
   });
 }
 
-export function useDeleteProfile(kind: ProfileKind) {
+export function useDeleteProfile() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => deleteProfile(kind, id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: [kind] }),
+    mutationFn: (id: string) => deleteProfile(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["people"] }),
   });
 }

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Trash2, Pencil } from "lucide-react";
+import { Trash2, Pencil, ChevronRight } from "lucide-react";
 import { useGame, useDeleteTable } from "@/features/games/hooks";
 import { AddTableSheet } from "@/features/games/AddTableSheet";
 import { EditSessionSheet } from "@/features/games/EditSessionSheet";
@@ -155,6 +155,9 @@ function TableRow({
           {tableEmoji(table.id)}
         </div>
         <div className="min-w-0 flex-1">
+          <div className="text-[11px] font-semibold uppercase tracking-wide text-violet-500">
+            Table
+          </div>
           <div className="flex items-center gap-2">
             <span className="truncate font-semibold">
               {gameTypeLabel(table.type)}
@@ -168,6 +171,7 @@ function TableRow({
             {table._count.playerSessions === 1 ? "" : "s"}
           </div>
         </div>
+        <ChevronRight size={18} className="shrink-0 text-slate-300" />
       </Link>
       <button
         onClick={onDelete}

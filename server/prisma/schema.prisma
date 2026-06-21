@@ -100,10 +100,11 @@ model Player {
   faceDescriptor Float[]  @map("face_descriptor") // 128-d for check-in matching
   createdAt      DateTime @default(now()) @map("created_at")
 
-  host       User            @relation(fields: [hostId], references: [id], onDelete: Cascade)
-  photo      Photo?          @relation("PlayerPhoto", fields: [photoId], references: [id])
-  sessions   PlayerSession[]
-  insurances Insurance[]
+  host           User            @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  photo          Photo?          @relation("PlayerPhoto", fields: [photoId], references: [id])
+  sessions       PlayerSession[]
+  dealerSessions DealerSession[] @relation("DealerSessions")
+  insurances     Insurance[]
 
   @@index([hostId])
   @@map("players")
@@ -119,9 +120,8 @@ model Dealer {
   faceDescriptor Float[]  @map("face_descriptor")
   createdAt      DateTime @default(now()) @map("created_at")
 
-  host     User            @relation(fields: [hostId], references: [id], onDelete: Cascade)
-  photo    Photo?          @relation("DealerPhoto", fields: [photoId], references: [id])
-  sessions DealerSession[]
+  host  User   @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  photo Photo? @relation("DealerPhoto", fields: [photoId], references: [id])
 
   @@index([hostId])
   @@map("dealers")
@@ -230,7 +230,7 @@ model DealerSession {
   createdAt  DateTime      @default(now()) @map("created_at")
 
   table  Table         @relation(fields: [tableId], references: [id], onDelete: Cascade)
-  dealer Dealer        @relation(fields: [dealerId], references: [id])
+  dealer Player        @relation("DealerSessions", fields: [dealerId], references: [id])
   ledger LedgerEntry[]
 
   @@index([tableId])

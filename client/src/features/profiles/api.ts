@@ -1,8 +1,7 @@
 import { api } from "@/lib/api";
 import type { Candidate } from "@/lib/face";
 
-/** URL segment for each profile kind. */
-export type ProfileKind = "players" | "dealers";
+export type Role = "player" | "dealer" | "host" | "admin";
 
 export interface Profile {
   id: string;
@@ -19,23 +18,18 @@ export interface ProfileInput {
   faceDescriptor?: number[];
 }
 
-export const listProfiles = (kind: ProfileKind) =>
-  api.get<Profile[]>(`/${kind}`);
+const q = (role?: Role) => (role ? `?role=${role}` : "");
 
-export const createProfile = (kind: ProfileKind, body: ProfileInput) =>
-  api.post<Profile>(`/${kind}`, body);
+export const listProfiles = (role?: Role) =>
+  api.get<Profile[]>(`/people${q(role)}`);
 
-export const updateProfile = (
-  kind: ProfileKind,
-  id: string,
-  body: Partial<ProfileInput>,
-) => api.patch<Profile>(`/${kind}/${id}`, body);
+export const createProfile = (body: ProfileInput) =>
+  api.post<Profile>("/people", body);
 
-export const deleteProfile = (kind: ProfileKind, id: string) =>
-  api.del<void>(`/${kind}/${id}`);
+export const updateProfile = (id: string, body: Partial<ProfileInput>) =>
+  api.patch<Profile>(`/people/${id}`, body);
 
-export const listDescriptors = (kind: ProfileKind) =>
-  api.get<Candidate[]>(`/${kind}/descriptors`);
+export const deleteProfile = (id: string) => api.del<void>(`/people/${id}`);
 
-export const singular = (kind: ProfileKind) =>
-  kind === "players" ? "player" : "dealer";
+export const listDescriptors = (role?: Role) =>
+  api.get<Candidate[]>(`/people/descriptors${q(role)}`);

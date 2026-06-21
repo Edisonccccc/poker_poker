@@ -138,6 +138,7 @@ export function TableDetailPage() {
                 <AuthImage
                   photoId={s.dealer.photoId}
                   alt={s.dealer.name}
+                  fallback="avatar"
                   className="h-10 w-10 rounded-full object-cover"
                 />
                 <div className="min-w-0 flex-1">
@@ -189,7 +190,7 @@ export function TableDetailPage() {
 
       {checkin === "players" && (
         <CheckInSheet
-          kind="players"
+          role="player"
           busy={checkInPlayer.isPending}
           onClose={() => setCheckin(null)}
           onPick={(profileId) =>
@@ -202,7 +203,7 @@ export function TableDetailPage() {
       )}
       {checkin === "dealers" && (
         <CheckInSheet
-          kind="dealers"
+          role="dealer"
           busy={checkInDealer.isPending}
           onClose={() => setCheckin(null)}
           onPick={(profileId) =>

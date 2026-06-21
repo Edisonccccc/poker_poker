@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Trash2 } from "lucide-react";
+import { Trash2, ChevronRight } from "lucide-react";
 import { useGames, useDeleteGame } from "@/features/games/hooks";
 import { CreateGameSheet } from "@/features/games/CreateGameSheet";
 import { formatGameDate, formatTime, sessionEmoji } from "@/lib/format";
@@ -12,7 +12,12 @@ export function GamesPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold tracking-tight">Sessions</h1>
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Sessions</h1>
+        <p className="text-sm text-slate-500">
+          One session per game day. Tap a session to manage its tables.
+        </p>
+      </div>
 
       <button onClick={() => setCreating(true)} className="btn-primary w-full">
         + New session
@@ -40,6 +45,9 @@ export function GamesPage() {
                   {sessionEmoji(g.id)}
                 </div>
                 <div className="min-w-0 flex-1">
+                  <div className="text-[11px] font-semibold uppercase tracking-wide text-violet-500">
+                    Session
+                  </div>
                   <div className="flex items-center gap-2">
                     <span className="truncate font-semibold">
                       {g.label || formatGameDate(g.gameDate)}
@@ -51,6 +59,7 @@ export function GamesPage() {
                     {g._count.tables} table{g._count.tables === 1 ? "" : "s"}
                   </div>
                 </div>
+                <ChevronRight size={18} className="shrink-0 text-slate-300" />
               </Link>
               <button
                 onClick={() => {

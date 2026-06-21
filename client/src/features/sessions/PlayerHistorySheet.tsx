@@ -46,6 +46,7 @@ export function PlayerHistorySheet({
           <AuthImage
             photoId={group.player.photoId}
             alt={group.player.name}
+            fallback="avatar"
             className="h-12 w-12 rounded-full object-cover"
           />
           <div className="flex-1">

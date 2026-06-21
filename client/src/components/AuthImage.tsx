@@ -7,10 +7,13 @@ export function AuthImage({
   photoId,
   alt = "",
   className = "",
+  fallback,
 }: {
   photoId: string | null | undefined;
   alt?: string;
   className?: string;
+  /** "avatar" shows a default person avatar when there's no photo. */
+  fallback?: "avatar";
 }) {
   const { data } = useQuery({
     queryKey: ["photo", photoId],
@@ -27,8 +30,13 @@ export function AuthImage({
     return () => URL.revokeObjectURL(objectUrl);
   }, [data]);
 
-  if (!photoId || !url) {
-    return <div className={`bg-slate-200 ${className}`} aria-label={alt} />;
+  if (!photoId) {
+    return fallback === "avatar" ? (
+      <img src="/default-avatar.svg" alt={alt} className={className} />
+    ) : (
+      <div className={`bg-slate-200 ${className}`} aria-label={alt} />
+    );
   }
+  if (!url) return <div className={`bg-slate-200 ${className}`} aria-label={alt} />;
   return <img src={url} alt={alt} className={className} />;
 }

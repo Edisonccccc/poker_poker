@@ -1,29 +1,15 @@
-import { useState } from "react";
 import { ProfileList } from "@/features/profiles/ProfileList";
-import type { ProfileKind } from "@/features/profiles/api";
 
 export function ProfilesPage() {
-  const [tab, setTab] = useState<ProfileKind>("players");
-
   return (
     <div className="space-y-5">
-      <h1 className="text-2xl font-bold tracking-tight">Profiles</h1>
-
-      <div className="flex rounded-xl bg-slate-100 p-1">
-        {(["players", "dealers"] as const).map((k) => (
-          <button
-            key={k}
-            onClick={() => setTab(k)}
-            className={`min-h-tap flex-1 rounded-lg py-2 text-sm font-semibold capitalize ${
-              tab === k ? "bg-violet-600 text-white" : "text-slate-500"
-            }`}
-          >
-            {k}
-          </button>
-        ))}
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">People</h1>
+        <p className="text-sm text-slate-500">
+          Players, dealers, and hosts. Tap anyone to edit their type.
+        </p>
       </div>
-
-      <ProfileList key={tab} kind={tab} />
+      <ProfileList />
     </div>
   );
 }

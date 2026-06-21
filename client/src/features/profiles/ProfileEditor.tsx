@@ -2,38 +2,37 @@ import { useState } from "react";
 import { CameraCapture } from "@/components/CameraCapture";
 import { uploadPhoto } from "@/lib/api";
 import { computeDescriptor, loadImage } from "@/lib/face";
+import { useAuth } from "@/features/auth/AuthContext";
 import {
   useCreateProfile,
   useDeleteProfile,
   useUpdateProfile,
 } from "./hooks";
-import { singular, type Profile, type ProfileKind } from "./api";
+import type { Profile } from "./api";
 import { PROFILE_ROLES, roleMeta } from "@/lib/format";
 
 export function ProfileEditor({
-  kind,
   existing,
   onClose,
 }: {
-  kind: ProfileKind;
   existing?: Profile;
   onClose: () => void;
 }) {
+  const { user } = useAuth();
+  const canEditRoles = user?.role === "admin" || user?.role === "host";
+
   const [name, setName] = useState(existing?.name ?? "");
   const [dataUrl, setDataUrl] = useState<string | null>(null);
-  const [roles, setRoles] = useState<string[]>(
-    existing?.roles ?? [singular(kind)],
-  );
+  const [roles, setRoles] = useState<string[]>(existing?.roles ?? ["player"]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const toggleRole = (r: string) =>
     setRoles((rs) => (rs.includes(r) ? rs.filter((x) => x !== r) : [...rs, r]));
 
-  const create = useCreateProfile(kind);
-  const update = useUpdateProfile(kind);
-  const remove = useDeleteProfile(kind);
-  const noun = singular(kind);
+  const create = useCreateProfile();
+  const update = useUpdateProfile();
+  const remove = useDeleteProfile();
 
   async function save() {
     if (!name.trim()) {
@@ -58,7 +57,12 @@ export function ProfileEditor({
       if (existing) {
         await update.mutateAsync({
           id: existing.id,
-          body: { name, photoId, roles, ...(faceDescriptor ? { faceDescriptor } : {}) },
+          body: {
+            name,
+            photoId,
+            ...(canEditRoles ? { roles } : {}),
+            ...(faceDescriptor ? { faceDescriptor } : {}),
+          },
         });
       } else {
         await create.mutateAsync({
@@ -88,7 +92,7 @@ export function ProfileEditor({
       const msg = e instanceof Error ? e.message : "";
       setError(
         msg.includes("API 409")
-          ? `Can't delete ${noun} — they have game history.`
+          ? "Can't delete this person — they have game history."
           : "Couldn't delete.",
       );
       console.error(e);
@@ -103,8 +107,8 @@ export function ProfileEditor({
           <button onClick={onClose} className="text-sm text-slate-500">
             Cancel
           </button>
-          <h2 className="text-base font-semibold capitalize">
-            {existing ? `Edit ${noun}` : `New ${noun}`}
+          <h2 className="text-base font-semibold">
+            {existing ? "Edit person" : "New person"}
           </h2>
           <button
             onClick={save}
@@ -128,22 +132,23 @@ export function ProfileEditor({
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder={`${noun} name`}
+            placeholder="Person name"
             className="min-h-tap w-full rounded-xl bg-slate-100 px-4 py-3 text-base outline-none focus:ring-2 focus:ring-violet-300"
           />
         </label>
 
         <div className="space-y-1">
           <span className="text-xs font-medium uppercase tracking-wide text-slate-400">
-            Roles
+            Type
           </span>
           <div className="flex flex-wrap gap-2">
             {PROFILE_ROLES.map((r) => (
               <button
                 key={r}
                 type="button"
+                disabled={!canEditRoles}
                 onClick={() => toggleRole(r)}
-                className={`min-h-tap rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                className={`min-h-tap rounded-xl px-4 py-2 text-sm font-semibold transition disabled:opacity-50 ${
                   roles.includes(r)
                     ? "bg-violet-600 text-white"
                     : "bg-slate-100 text-slate-500"
@@ -153,6 +158,11 @@ export function ProfileEditor({
               </button>
             ))}
           </div>
+          {!canEditRoles && (
+            <p className="text-xs text-slate-400">
+              Only a host or admin can change a person's type.
+            </p>
+          )}
         </div>
 
         {error && <p className="text-sm text-amber-600">{error}</p>}
@@ -165,7 +175,7 @@ export function ProfileEditor({
             disabled={busy}
             className="min-h-tap rounded-xl border border-red-300 px-4 py-3 text-sm font-semibold text-red-500 disabled:opacity-50"
           >
-            Delete {noun}
+            Delete person
           </button>
         )}
       </div>

@@ -2,25 +2,25 @@ import { useState } from "react";
 import { AuthImage } from "@/components/AuthImage";
 import { FaceScan } from "@/components/FaceScan";
 import { useProfiles, useProfileDescriptors } from "@/features/profiles/hooks";
-import { singular, type ProfileKind } from "@/features/profiles/api";
+import type { Role } from "@/features/profiles/api";
 
 /** Pick a player/dealer to check in — by face scan or name search. */
 export function CheckInSheet({
-  kind,
+  role,
   onPick,
   onClose,
   busy,
 }: {
-  kind: ProfileKind;
+  role: Role;
   onPick: (profileId: string) => void;
   onClose: () => void;
   busy?: boolean;
 }) {
   const [mode, setMode] = useState<"search" | "scan">("search");
-  const { data } = useProfiles(kind);
-  const descriptors = useProfileDescriptors(kind, mode === "scan");
+  const { data } = useProfiles(role);
+  const descriptors = useProfileDescriptors(role, mode === "scan");
   const [q, setQ] = useState("");
-  const noun = singular(kind);
+  const noun = role; // "player" | "dealer"
 
   const filtered = (data ?? []).filter((p) =>
     p.name.toLowerCase().includes(q.trim().toLowerCase()),
@@ -33,9 +33,7 @@ export function CheckInSheet({
           <button onClick={onClose} className="text-sm text-slate-500">
             Cancel
           </button>
-          <h2 className="text-base font-semibold capitalize">
-            Check in {noun}
-          </h2>
+          <h2 className="text-base font-semibold capitalize">Check in {noun}</h2>
           <span className="w-12" />
         </header>
 
@@ -57,7 +55,7 @@ export function CheckInSheet({
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder={`Search ${kind}…`}
+              placeholder={`Search ${noun}s…`}
               className="input"
             />
             <ul className="flex-1 space-y-1 overflow-y-auto">
@@ -71,6 +69,7 @@ export function CheckInSheet({
                     <AuthImage
                       photoId={p.photoId}
                       alt={p.name}
+                      fallback="avatar"
                       className="h-11 w-11 rounded-full object-cover"
                     />
                     <span className="font-medium">{p.name}</span>
@@ -79,7 +78,7 @@ export function CheckInSheet({
               ))}
               {filtered.length === 0 && (
                 <li className="py-6 text-center text-sm text-slate-400">
-                  No {kind} found. Add them under Profiles.
+                  No {noun}s found. Add them under People.
                 </li>
               )}
             </ul>

@@ -49,22 +49,29 @@ export function PokerTable({
           <button
             key={seat.id}
             onClick={() => onSelect(seat.id)}
-            className="absolute flex w-[68px] -translate-x-1/2 -translate-y-1/2 flex-col items-center"
+            className="absolute flex w-[84px] -translate-x-1/2 -translate-y-1/2 flex-col items-center"
             style={{ left: `${left}%`, top: `${top}%` }}
           >
             <AuthImage
               photoId={seat.photoId}
               alt={seat.name}
-              className={`h-12 w-12 rounded-full border-2 object-cover shadow ${
+              fallback="avatar"
+              className={`h-12 w-12 rounded-full border-2 object-cover ${
                 seat.active
-                  ? "border-violet-500"
-                  : "border-slate-300 opacity-60"
+                  ? "border-emerald-400 ring-2 ring-emerald-400/70 shadow-[0_0_0_3px_rgba(16,185,129,0.25)]"
+                  : "border-slate-500 opacity-60 grayscale"
               }`}
             />
-            <span className="mt-0.5 max-w-[68px] truncate text-[11px] font-medium leading-tight text-slate-700">
+            <span className="mt-1 max-w-[84px] truncate text-[11px] font-semibold leading-tight text-slate-700">
               {seat.name}
             </span>
-            <span className="text-[10px] leading-tight text-slate-500">
+            <span
+              className={`mt-0.5 rounded-full px-2 py-[1px] text-[10px] font-bold leading-tight shadow-sm ${
+                seat.active
+                  ? "bg-emerald-500 text-white"
+                  : "bg-slate-600/80 text-slate-100"
+              }`}
+            >
               {seat.subtitle}
             </span>
           </button>

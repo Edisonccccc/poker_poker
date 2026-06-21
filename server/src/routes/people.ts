@@ -20,32 +20,28 @@ const SELECT = {
   createdAt: true,
 };
 
-/**
- * CRUD for a reusable profile kind (players or dealers). Player and dealer have
- * an identical surface here, so we share one router and pick the Prisma delegate
- * by kind.
- */
-export function createProfileRouter(kind: "player" | "dealer") {
+/** Single "People" list. Each person can hold multiple roles. */
+export function createPeopleRouter() {
   const router = Router();
   router.use(requireAuth);
 
-  // reason: prisma.player and prisma.dealer share the same delegate shape; index
-  // dynamically rather than duplicate the whole router for each kind.
-  const delegate = (prisma as any)[kind];
+  function roleFilter(req: { query: any }) {
+    const role = typeof req.query.role === "string" ? req.query.role : null;
+    return role ? { roles: { has: role } } : {};
+  }
 
   router.get("/", async (req, res) => {
-    const rows = await delegate.findMany({
-      where: { hostId: req.user!.id },
+    const rows = await prisma.player.findMany({
+      where: { hostId: req.user!.id, ...roleFilter(req) },
       select: SELECT,
       orderBy: { name: "asc" },
     });
     res.json(rows);
   });
 
-  // Face descriptors for client-side matching. Registered before "/:id".
   router.get("/descriptors", async (req, res) => {
-    const rows = await delegate.findMany({
-      where: { hostId: req.user!.id },
+    const rows = await prisma.player.findMany({
+      where: { hostId: req.user!.id, ...roleFilter(req) },
       select: { id: true, name: true, photoId: true, faceDescriptor: true },
     });
     res.json(rows);
@@ -56,10 +52,10 @@ export function createProfileRouter(kind: "player" | "dealer") {
     if (!parsed.success) {
       return res.status(400).json({ error: parsed.error.flatten() });
     }
-    const row = await delegate.create({
+    const row = await prisma.player.create({
       data: {
         ...parsed.data,
-        roles: parsed.data.roles ?? [kind], // default to this profile's kind
+        roles: parsed.data.roles ?? ["player"],
         hostId: req.user!.id,
       },
       select: SELECT,
@@ -68,7 +64,7 @@ export function createProfileRouter(kind: "player" | "dealer") {
   });
 
   router.get("/:id", async (req, res) => {
-    const row = await delegate.findFirst({
+    const row = await prisma.player.findFirst({
       where: { id: req.params.id, hostId: req.user!.id },
       select: SELECT,
     });
@@ -81,12 +77,12 @@ export function createProfileRouter(kind: "player" | "dealer") {
     if (!parsed.success) {
       return res.status(400).json({ error: parsed.error.flatten() });
     }
-    const existing = await delegate.findFirst({
+    const existing = await prisma.player.findFirst({
       where: { id: req.params.id, hostId: req.user!.id },
     });
     if (!existing) return res.status(404).json({ error: "not found" });
-    const row = await delegate.update({
-      where: { id: req.params.id },
+    const row = await prisma.player.update({
+      where: { id: existing.id },
       data: parsed.data,
       select: SELECT,
     });
@@ -94,26 +90,22 @@ export function createProfileRouter(kind: "player" | "dealer") {
   });
 
   router.delete("/:id", async (req, res) => {
-    const existing = await delegate.findFirst({
+    const existing = await prisma.player.findFirst({
       where: { id: req.params.id, hostId: req.user!.id },
     });
     if (!existing) return res.status(404).json({ error: "not found" });
 
-    // Don't orphan game history — block deletion if this profile has sessions.
-    // reason: dynamic delegate by kind, same rationale as above.
-    const sessionDelegate = (prisma as any)[`${kind}Session`];
-    const sessionCount = await sessionDelegate.count({
-      where: { [`${kind}Id`]: existing.id },
-    });
-    if (sessionCount > 0) {
+    const [asPlayer, asDealer] = await Promise.all([
+      prisma.playerSession.count({ where: { playerId: existing.id } }),
+      prisma.dealerSession.count({ where: { dealerId: existing.id } }),
+    ]);
+    if (asPlayer + asDealer > 0) {
       return res
         .status(409)
-        .json({ error: "can't delete: this profile has game history" });
+        .json({ error: "can't delete: this person has game history" });
     }
 
-    // Delete the profile first (clears the FK), then its photo. Array form keeps
-    // both in one transaction without an implicitly-typed callback param.
-    const ops = [delegate.delete({ where: { id: req.params.id } })];
+    const ops: any[] = [prisma.player.delete({ where: { id: existing.id } })];
     if (existing.photoId) {
       ops.push(prisma.photo.delete({ where: { id: existing.photoId } }));
     }

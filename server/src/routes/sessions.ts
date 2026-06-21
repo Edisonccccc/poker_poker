@@ -284,10 +284,10 @@ sessionsRouter.post("/tables/:tableId/dealer-sessions", async (req, res) => {
   if (!parsed.success) {
     return res.status(400).json({ error: parsed.error.flatten() });
   }
-  const dealer = await prisma.dealer.findFirst({
+  const dealer = await prisma.player.findFirst({
     where: { id: parsed.data.profileId, hostId: req.user!.id },
   });
-  if (!dealer) return res.status(404).json({ error: "dealer not found" });
+  if (!dealer) return res.status(404).json({ error: "person not found" });
   const active = await prisma.dealerSession.findFirst({
     where: { tableId: table.id, dealerId: dealer.id, status: "active" },
   });
