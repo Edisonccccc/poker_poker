@@ -21,6 +21,16 @@ export const tableEmoji = (id: string): string =>
 export const sessionEmoji = (id: string): string =>
   SESSION_EMOJIS[hashId(id) % SESSION_EMOJIS.length];
 
+export const PROFILE_ROLES = ["player", "dealer", "host", "admin"] as const;
+export type ProfileRole = (typeof PROFILE_ROLES)[number];
+
+export const roleEmoji: Record<ProfileRole, string> = {
+  player: "🎯",
+  dealer: "🃏",
+  host: "🏠",
+  admin: "👑",
+};
+
 export const formatGameDate = (iso: string): string =>
   new Date(iso).toLocaleDateString(undefined, {
     weekday: "short",

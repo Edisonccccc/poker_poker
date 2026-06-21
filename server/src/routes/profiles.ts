@@ -3,13 +3,22 @@ import { z } from "zod";
 import { prisma } from "../db";
 import { requireAuth } from "../auth/middleware";
 
+const ROLES = ["player", "dealer", "host", "admin"] as const;
+
 const upsertSchema = z.object({
   name: z.string().min(1).max(80),
   photoId: z.string().uuid().nullable().optional(),
+  roles: z.array(z.enum(ROLES)).optional(),
   faceDescriptor: z.array(z.number()).max(512).optional(),
 });
 
-const SELECT = { id: true, name: true, photoId: true, createdAt: true };
+const SELECT = {
+  id: true,
+  name: true,
+  photoId: true,
+  roles: true,
+  createdAt: true,
+};
 
 /**
  * CRUD for a reusable profile kind (players or dealers). Player and dealer have
@@ -48,7 +57,11 @@ export function createProfileRouter(kind: "player" | "dealer") {
       return res.status(400).json({ error: parsed.error.flatten() });
     }
     const row = await delegate.create({
-      data: { ...parsed.data, hostId: req.user!.id },
+      data: {
+        ...parsed.data,
+        roles: parsed.data.roles ?? [kind], // default to this profile's kind
+        hostId: req.user!.id,
+      },
       select: SELECT,
     });
     res.status(201).json(row);

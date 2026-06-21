@@ -8,12 +8,14 @@ export interface Profile {
   id: string;
   name: string;
   photoId: string | null;
+  roles: string[];
   createdAt: string;
 }
 
 export interface ProfileInput {
   name: string;
   photoId?: string | null;
+  roles?: string[];
   faceDescriptor?: number[];
 }
 

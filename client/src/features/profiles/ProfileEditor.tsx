@@ -8,6 +8,7 @@ import {
   useUpdateProfile,
 } from "./hooks";
 import { singular, type Profile, type ProfileKind } from "./api";
+import { PROFILE_ROLES, roleEmoji } from "@/lib/format";
 
 export function ProfileEditor({
   kind,
@@ -20,8 +21,14 @@ export function ProfileEditor({
 }) {
   const [name, setName] = useState(existing?.name ?? "");
   const [dataUrl, setDataUrl] = useState<string | null>(null);
+  const [roles, setRoles] = useState<string[]>(
+    existing?.roles ?? [singular(kind)],
+  );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const toggleRole = (r: string) =>
+    setRoles((rs) => (rs.includes(r) ? rs.filter((x) => x !== r) : [...rs, r]));
 
   const create = useCreateProfile(kind);
   const update = useUpdateProfile(kind);
@@ -51,12 +58,13 @@ export function ProfileEditor({
       if (existing) {
         await update.mutateAsync({
           id: existing.id,
-          body: { name, photoId, ...(faceDescriptor ? { faceDescriptor } : {}) },
+          body: { name, photoId, roles, ...(faceDescriptor ? { faceDescriptor } : {}) },
         });
       } else {
         await create.mutateAsync({
           name,
           photoId,
+          roles,
           ...(faceDescriptor ? { faceDescriptor } : {}),
         });
       }
@@ -124,6 +132,28 @@ export function ProfileEditor({
             className="min-h-tap w-full rounded-xl bg-slate-100 px-4 py-3 text-base outline-none focus:ring-2 focus:ring-violet-300"
           />
         </label>
+
+        <div className="space-y-1">
+          <span className="text-xs font-medium uppercase tracking-wide text-slate-400">
+            Roles
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {PROFILE_ROLES.map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => toggleRole(r)}
+                className={`min-h-tap rounded-xl px-3 py-2 text-sm font-semibold capitalize transition ${
+                  roles.includes(r)
+                    ? "bg-violet-600 text-white"
+                    : "bg-slate-100 text-slate-500"
+                }`}
+              >
+                {roleEmoji[r]} {r}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {error && <p className="text-sm text-amber-600">{error}</p>}
 

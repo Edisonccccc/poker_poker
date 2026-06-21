@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AuthImage } from "@/components/AuthImage";
+import { RoleBadges } from "@/components/RoleBadges";
 import { useProfiles } from "./hooks";
 import { ProfileEditor } from "./ProfileEditor";
 import { singular, type Profile, type ProfileKind } from "./api";
@@ -36,11 +37,19 @@ export function ProfileList({ kind }: { kind: ProfileKind }) {
                 onClick={() => setEditing(p)}
                 className="block w-full text-left"
               >
-                <AuthImage
-                  photoId={p.photoId}
-                  alt={p.name}
-                  className="aspect-square w-full rounded-2xl object-cover"
-                />
+                <div className="relative">
+                  <AuthImage
+                    photoId={p.photoId}
+                    alt={p.name}
+                    className="aspect-square w-full rounded-2xl object-cover"
+                  />
+                  {p.roles.length > 0 && (
+                    <RoleBadges
+                      roles={p.roles}
+                      className="absolute bottom-1 right-1 rounded-full bg-white/90 px-1.5 py-0.5 text-xs shadow-sm"
+                    />
+                  )}
+                </div>
                 <span className="mt-1 block truncate text-xs text-slate-700">
                   {p.name}
                 </span>
