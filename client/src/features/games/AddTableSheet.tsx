@@ -2,6 +2,7 @@ import { useState, type ChangeEvent } from "react";
 import { useAddTable } from "./hooks";
 import { uploadPhoto } from "@/lib/api";
 import { fileToDownscaledDataUrl } from "@/lib/image";
+import { identifyChip } from "@/features/chips/api";
 import { gameTypeLabel } from "@/lib/format";
 import type { GameType } from "./api";
 
@@ -9,7 +10,17 @@ interface DenomDraft {
   color: string;
   value: string;
   dataUrl: string | null;
+  refPhotoId: string | null;
+  scanning: boolean;
 }
+
+const emptyDenom = (): DenomDraft => ({
+  color: "",
+  value: "",
+  dataUrl: null,
+  refPhotoId: null,
+  scanning: false,
+});
 
 const TYPES: GameType[] = ["texas_holdem", "blackjack"];
 
@@ -23,9 +34,7 @@ export function AddTableSheet({
   const [type, setType] = useState<GameType>("texas_holdem");
   const [stakes, setStakes] = useState("");
   const [label, setLabel] = useState("");
-  const [denoms, setDenoms] = useState<DenomDraft[]>([
-    { color: "", value: "", dataUrl: null },
-  ]);
+  const [denoms, setDenoms] = useState<DenomDraft[]>([emptyDenom()]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const add = useAddTable(gameId);
@@ -34,12 +43,30 @@ export function AddTableSheet({
     setDenoms((rows) => rows.map((r, j) => (j === i ? { ...r, ...patch } : r)));
   }
 
-  async function onRowFile(i: number, e: ChangeEvent<HTMLInputElement>) {
+  // Scan a chip: upload as its reference photo, then ask the model for color+value.
+  async function onScan(i: number, e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    setError(null);
     try {
-      patchDenom(i, { dataUrl: await fileToDownscaledDataUrl(file) });
+      const dataUrl = await fileToDownscaledDataUrl(file);
+      patchDenom(i, { dataUrl, scanning: true });
+      const photoId = await uploadPhoto(dataUrl);
+      patchDenom(i, { refPhotoId: photoId });
+      try {
+        const id = await identifyChip(photoId);
+        patchDenom(i, {
+          color: id.color || "",
+          value: id.value != null ? String(id.value) : "",
+          scanning: false,
+        });
+      } catch {
+        // identify failed — keep the photo, let the host type color/value.
+        patchDenom(i, { scanning: false });
+        setError("Couldn't auto-read that chip — enter color/value manually.");
+      }
     } catch {
+      patchDenom(i, { scanning: false });
       setError("Couldn't read that image.");
     }
   }
@@ -55,7 +82,9 @@ export function AddTableSheet({
     try {
       const denominations = [];
       for (const d of clean) {
-        const refPhotoId = d.dataUrl ? await uploadPhoto(d.dataUrl) : null;
+        // Reuse the scanned photo if present; otherwise upload a chosen one.
+        const refPhotoId =
+          d.refPhotoId ?? (d.dataUrl ? await uploadPhoto(d.dataUrl) : null);
         denominations.push({
           color: d.color.trim(),
           value: Number(d.value),
@@ -141,6 +170,9 @@ export function AddTableSheet({
           <span className="text-xs font-medium uppercase tracking-wide text-white/50">
             Chip denominations
           </span>
+          <p className="text-xs text-white/45">
+            Tap the photo to scan a chip — it auto-fills color &amp; value.
+          </p>
           {denoms.map((d, i) => (
             <div key={i} className="flex items-center gap-2">
               <input
@@ -157,7 +189,9 @@ export function AddTableSheet({
                 className="input w-24"
               />
               <label className="relative flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-xl bg-white/10 text-xs text-white/60">
-                {d.dataUrl ? (
+                {d.scanning ? (
+                  "…"
+                ) : d.dataUrl ? (
                   <img
                     src={d.dataUrl}
                     alt=""
@@ -169,7 +203,8 @@ export function AddTableSheet({
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={(e) => onRowFile(i, e)}
+                  capture="environment"
+                  onChange={(e) => onScan(i, e)}
                   className="hidden"
                 />
               </label>
@@ -187,9 +222,7 @@ export function AddTableSheet({
             </div>
           ))}
           <button
-            onClick={() =>
-              setDenoms((rows) => [...rows, { color: "", value: "", dataUrl: null }])
-            }
+            onClick={() => setDenoms((rows) => [...rows, emptyDenom()])}
             className="min-h-tap w-full rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white/80"
           >
             + Add color

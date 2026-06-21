@@ -11,6 +11,6 @@ export const env = {
   // Server-side key for the vision model used by chip/tip counting (Milestone 7).
   VISION_API_KEY: process.env.VISION_API_KEY ?? "",
   // Anthropic vision model used for chip counting; override if needed.
-  VISION_MODEL: process.env.VISION_MODEL ?? "claude-sonnet-4-6",
+  VISION_MODEL: process.env.VISION_MODEL ?? "claude-opus-4-8",
   NODE_ENV: process.env.NODE_ENV ?? "development",
 };

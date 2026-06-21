@@ -4,12 +4,12 @@ import { uploadPhoto } from "@/lib/api";
 import { countChips, type PerColor } from "./api";
 import { money } from "@/lib/format";
 
-type Phase = "capture" | "counting" | "review" | "error";
+type Phase = "capture" | "counting" | "review";
 
 /**
- * Take a photo of a chip stack, count it with the vision model, then let the
- * host review/edit per-color counts before using the total. Manual entry remains
- * available on the parent sheet if this fails.
+ * Photograph one or more chip stacks, count each with the vision model, and sum
+ * the per-color counts. The host reviews/edits before using the total. Manual
+ * entry remains available on the parent sheet.
  */
 export function ChipCountSheet({
   tableId,
@@ -24,7 +24,24 @@ export function ChipCountSheet({
 }) {
   const [phase, setPhase] = useState<Phase>("capture");
   const [rows, setRows] = useState<PerColor[]>([]);
+  const [photos, setPhotos] = useState(0);
   const [error, setError] = useState<string | null>(null);
+
+  function mergeCounts(existing: PerColor[], incoming: PerColor[]): PerColor[] {
+    const out = existing.map((r) => ({ ...r }));
+    for (const pc of incoming) {
+      const found = out.find(
+        (r) => r.color.toLowerCase() === pc.color.toLowerCase(),
+      );
+      if (found) {
+        found.count += pc.count;
+        found.subtotal = found.count * found.value;
+      } else {
+        out.push({ ...pc });
+      }
+    }
+    return out;
+  }
 
   async function onCapture(dataUrl: string) {
     setPhase("counting");
@@ -32,7 +49,8 @@ export function ChipCountSheet({
     try {
       const photoId = await uploadPhoto(dataUrl);
       const result = await countChips(tableId, photoId);
-      setRows(result.perColor);
+      setRows((prev) => mergeCounts(prev, result.perColor));
+      setPhotos((n) => n + 1);
       setPhase("review");
     } catch (e) {
       const msg = e instanceof Error ? e.message : "";
@@ -41,11 +59,11 @@ export function ChipCountSheet({
           "Photo counting isn't set up on the server (check VISION_API_KEY and restart).",
         );
       } else {
-        // Surface the server's detail so vision/API problems are diagnosable.
         const detail = msg.replace(/^API \d+:\s*/, "");
-        setError(`Couldn't count: ${detail || "unknown error"}. Enter manually.`);
+        setError(`Couldn't count: ${detail || "unknown error"}.`);
       }
-      setPhase("error");
+      // Keep any earlier photos; let the host retry or go manual.
+      setPhase(rows.length > 0 ? "review" : "capture");
     }
   }
 
@@ -63,7 +81,7 @@ export function ChipCountSheet({
             Cancel
           </button>
           <h2 className="text-base font-semibold">{title}</h2>
-          {phase === "review" ? (
+          {rows.length > 0 ? (
             <button
               onClick={() => onUse(total)}
               className="text-sm font-semibold text-emerald-400"
@@ -75,12 +93,13 @@ export function ChipCountSheet({
           )}
         </header>
 
-        {(phase === "capture" || phase === "error") && (
+        {phase === "capture" && (
           <>
             {error && <p className="text-sm text-amber-400">{error}</p>}
             <p className="text-sm text-white/55">
-              For best accuracy, spread the chips in a single layer and shoot
-              top-down. Stacks work too, but count by the edges.
+              {photos === 0
+                ? "Spread the chips in a single layer (top-down is most accurate), or shoot a stack from the side."
+                : `Photo ${photos} added. Take another stack, or use the total.`}
             </p>
             <CameraCapture
               onCapture={onCapture}
@@ -88,6 +107,14 @@ export function ChipCountSheet({
               maxSize={1280}
               quality={0.85}
             />
+            {rows.length > 0 && (
+              <button
+                onClick={() => setPhase("review")}
+                className="min-h-tap w-full rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white/70"
+              >
+                Done adding — review {money(total)}
+              </button>
+            )}
           </>
         )}
 
@@ -97,8 +124,10 @@ export function ChipCountSheet({
 
         {phase === "review" && (
           <>
+            {error && <p className="text-sm text-amber-400">{error}</p>}
             <p className="text-sm text-white/55">
-              Check the counts and fix any that look off.
+              Counted from {photos} photo{photos === 1 ? "" : "s"}. Fix any counts
+              that look off.
             </p>
             <ul className="space-y-2">
               {rows.map((r, i) => (
@@ -127,10 +156,13 @@ export function ChipCountSheet({
               <div className="text-3xl font-bold">{money(total)}</div>
             </div>
             <button
-              onClick={() => setPhase("capture")}
-              className="min-h-tap w-full rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white/70"
+              onClick={() => {
+                setError(null);
+                setPhase("capture");
+              }}
+              className="min-h-tap w-full rounded-xl bg-felt-light px-4 py-2 text-sm font-semibold"
             >
-              Retake photo
+              + Add another photo
             </button>
           </>
         )}

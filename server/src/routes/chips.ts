@@ -6,6 +6,7 @@ import { requireAuth } from "../auth/middleware";
 import { getOwnedTable } from "../lib/ownership";
 import {
   countChips,
+  identifyChip,
   VisionNotConfigured,
   type CountDenomination,
   type ImageData,
@@ -18,6 +19,8 @@ const schema = z.object({
   tableId: z.string().uuid(),
   photoId: z.string().uuid(),
 });
+
+const identifySchema = z.object({ photoId: z.string().uuid() });
 
 function toImageData(photo: { data: unknown; mimeType: string }): ImageData {
   return {
@@ -88,5 +91,32 @@ chipsRouter.post("/chips/count", async (req, res) => {
       error: "Couldn't read the photo. Enter the count manually.",
       detail,
     });
+  }
+});
+
+// Identify a single chip's color + value from a photo (for table setup).
+chipsRouter.post("/chips/identify", async (req, res) => {
+  if (!env.VISION_API_KEY) {
+    return res.status(503).json({ error: "Photo identify isn't configured." });
+  }
+  const parsed = identifySchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.flatten() });
+  }
+  const photo = await prisma.photo.findUnique({
+    where: { id: parsed.data.photoId },
+  });
+  if (!photo) return res.status(404).json({ error: "photo not found" });
+
+  try {
+    const result = await identifyChip(toImageData(photo));
+    res.json(result);
+  } catch (e) {
+    if (e instanceof VisionNotConfigured) {
+      return res.status(503).json({ error: "Photo identify isn't configured." });
+    }
+    console.error("chip identify failed", e);
+    const detail = e instanceof Error ? e.message.slice(0, 400) : String(e);
+    res.status(502).json({ error: "Couldn't identify the chip.", detail });
   }
 });

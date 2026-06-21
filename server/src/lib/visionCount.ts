@@ -126,3 +126,59 @@ export async function countChips(params: {
   const total = perColor.reduce((a, p) => a + p.subtotal, 0);
   return { perColor, total };
 }
+
+/** Identify a single chip's color and printed value from a photo. */
+export async function identifyChip(
+  image: ImageData,
+): Promise<{ color: string; value: number | null }> {
+  if (!env.VISION_API_KEY) throw new VisionNotConfigured();
+
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-api-key": env.VISION_API_KEY,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model: env.VISION_MODEL,
+      max_tokens: 256,
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text:
+                "Identify this single poker chip. Return ONLY JSON: " +
+                '{"color":"<short lowercase color name>","value":<integer ' +
+                "dollar value printed on the chip, or null if unreadable>}. " +
+                'Example: {"color":"red","value":5}. No prose.',
+            },
+            {
+              type: "image",
+              source: {
+                type: "base64",
+                media_type: image.mediaType,
+                data: image.data,
+              },
+            },
+          ],
+        },
+      ],
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`vision API ${res.status}: ${body}`);
+  }
+  const data: any = await res.json();
+  const json = extractJson(data.content?.[0]?.text ?? "");
+  const value =
+    json.value === null || json.value === undefined ? null : Number(json.value);
+  return {
+    color: String(json.color ?? "").toLowerCase(),
+    value: Number.isFinite(value as number) ? (value as number) : null,
+  };
+}
