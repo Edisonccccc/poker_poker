@@ -8,7 +8,12 @@ export interface ReimbursementInput {
 
 export const checkoutPlayer = (
   sessionId: string,
-  body: { chipsOut: number; reimbursements: ReimbursementInput[] },
+  body: {
+    chipsOut: number;
+    reimbursements: ReimbursementInput[];
+    hourlyReturn?: boolean;
+    hourlyRate?: number;
+  },
 ) => api.post<PlayerSession>(`/player-sessions/${sessionId}/checkout`, body);
 
 export const checkoutDealer = (sessionId: string, tipsTotal: number) =>

@@ -51,6 +51,7 @@ export interface SettlementTotals {
   hostCosts: number;
   insurancePremiums: number;
   insurancePayouts: number;
+  hourlyComp: number;
   hostTake: number;
   hostNet: number;
 }

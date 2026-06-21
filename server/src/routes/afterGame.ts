@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "../db";
 import { requireAuth } from "../auth/middleware";
 import { getOwnedGame } from "../lib/ownership";
+import { sessionComp } from "../lib/comp";
 
 export const afterGameRouter = Router();
 afterGameRouter.use(requireAuth);
@@ -151,6 +152,10 @@ afterGameRouter.get("/games/:gameId/settlement", async (req, res) => {
         status: true,
         chipsOut: true,
         tableId: true,
+        checkinAt: true,
+        checkoutAt: true,
+        hourlyReturn: true,
+        hourlyRate: true,
         player: { select: { id: true, name: true, photoId: true } },
         ledger: { select: { type: true, amount: true } },
       },
@@ -205,8 +210,9 @@ afterGameRouter.get("/games/:gameId/settlement", async (req, res) => {
       .filter((l: any) => l.type === "reimbursement")
       .reduce((a: number, l: any) => a + num(l.amount), 0);
     const checkedOut = s.status === "checked_out" && s.chipsOut !== null;
+    const comp = checkedOut ? sessionComp(s) : 0;
     const net = checkedOut
-      ? num(s.chipsOut) - buyInTotal + reimburseTotal
+      ? num(s.chipsOut) - buyInTotal + reimburseTotal + comp
       : null;
     return {
       sessionId: s.id,
@@ -215,6 +221,7 @@ afterGameRouter.get("/games/:gameId/settlement", async (req, res) => {
       status: s.status,
       buyInTotal,
       reimburseTotal,
+      comp,
       chipsOut: checkedOut ? num(s.chipsOut) : null,
       net,
     };
@@ -255,13 +262,15 @@ afterGameRouter.get("/games/:gameId/settlement", async (req, res) => {
     (a: number, c: any) => a + num(c.amount),
     0,
   );
+  const hourlyComp = players.reduce((a: number, p: any) => a + (p.comp ?? 0), 0);
   const hostTake =
     cashIn -
     playerPayout -
     dealerPayout -
     reimbursements +
     insurancePremiums -
-    insurancePayouts;
+    insurancePayouts -
+    hourlyComp;
   const hostNet = hostTake - hostCostsTotal;
 
   res.json({
@@ -296,6 +305,7 @@ afterGameRouter.get("/games/:gameId/settlement", async (req, res) => {
       hostCosts: hostCostsTotal,
       insurancePremiums,
       insurancePayouts,
+      hourlyComp,
       hostTake,
       hostNet,
     },

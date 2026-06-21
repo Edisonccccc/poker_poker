@@ -36,6 +36,9 @@ export function GameStatsPanel({
         {t.insurancePayouts > 0 && (
           <Row label="Insurance payouts" value={-t.insurancePayouts} />
         )}
+        {t.hourlyComp > 0 && (
+          <Row label="Player time comps" value={-t.hourlyComp} />
+        )}
         <div className="my-2 border-t border-slate-200" />
         <Row label="Host take" value={t.hostTake} bold />
         <Row label="Host costs" value={-t.hostCosts} />

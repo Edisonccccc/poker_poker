@@ -199,6 +199,8 @@ model PlayerSession {
   chipsOut    Decimal?      @map("chips_out") @db.Decimal(12, 2)
   chipMethod  String?       @map("chip_method") // 'manual' | 'photo'
   chipPhotoId String?       @map("chip_photo_id") @db.Uuid
+  hourlyReturn Boolean      @default(false) @map("hourly_return") // comp player for time
+  hourlyRate  Decimal       @default(25) @map("hourly_rate") @db.Decimal(12, 2)
   status      SessionStatus @default(active)
   note        String?
   createdAt   DateTime      @default(now()) @map("created_at")

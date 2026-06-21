@@ -7,6 +7,7 @@ import {
   getOwnedPlayerSession,
   getOwnedDealerSession,
 } from "../lib/ownership";
+import { sessionComp } from "../lib/comp";
 
 export const sessionsRouter = Router();
 sessionsRouter.use(requireAuth);
@@ -26,6 +27,8 @@ const playerCheckoutSchema = z.object({
       }),
     )
     .optional(),
+  hourlyReturn: z.boolean().optional(),
+  hourlyRate: z.number().nonnegative().optional(),
 });
 const dealerCheckoutSchema = z.object({ tipsTotal: z.number().nonnegative() });
 const paymentSchema = z.object({
@@ -39,6 +42,8 @@ const PLAYER_SELECT = {
   checkoutAt: true,
   status: true,
   chipsOut: true,
+  hourlyReturn: true,
+  hourlyRate: true,
   player: { select: { id: true, name: true, photoId: true } },
   ledger: {
     select: { id: true, type: true, amount: true, category: true, occurredAt: true },
@@ -63,8 +68,11 @@ function playerRow(s: any) {
       .reduce((a: number, l: any) => a + Number(l.amount), 0);
   const buyInTotal = sum("buy_in");
   const reimburseTotal = sum("reimbursement");
+  const comp = sessionComp(s);
   const checkedOut = s.status === "checked_out" && s.chipsOut !== null;
-  const net = checkedOut ? Number(s.chipsOut) - buyInTotal + reimburseTotal : null;
+  const net = checkedOut
+    ? Number(s.chipsOut) - buyInTotal + reimburseTotal + comp
+    : null;
   const entries = s.ledger.map((l: any) => ({
     id: l.id,
     type: l.type,
@@ -73,7 +81,7 @@ function playerRow(s: any) {
     occurredAt: l.occurredAt,
   }));
   const { ledger, ...rest } = s;
-  return { ...rest, buyInTotal, reimburseTotal, net, entries };
+  return { ...rest, buyInTotal, reimburseTotal, comp, net, entries };
 }
 
 // ── Player sessions ───────────────────────────────────────────────────────────
@@ -220,6 +228,12 @@ sessionsRouter.post("/player-sessions/:id/checkout", async (req, res) => {
         chipMethod: "manual",
         checkoutAt: new Date(),
         status: "checked_out",
+        ...(parsed.data.hourlyReturn !== undefined
+          ? { hourlyReturn: parsed.data.hourlyReturn }
+          : {}),
+        ...(parsed.data.hourlyRate !== undefined
+          ? { hourlyRate: parsed.data.hourlyRate }
+          : {}),
       },
     }),
   ]);

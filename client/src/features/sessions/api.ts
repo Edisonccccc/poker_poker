@@ -25,6 +25,9 @@ export interface PlayerSession {
   player: SessionPerson;
   buyInTotal: number;
   reimburseTotal: number;
+  comp: number;
+  hourlyReturn: boolean;
+  hourlyRate: string;
   net: number | null;
   entries: LedgerEntry[];
 }

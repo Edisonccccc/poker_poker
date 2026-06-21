@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useCheckoutPlayer } from "./hooks";
 import type { PlayerSession } from "@/features/sessions/api";
-import { money } from "@/lib/format";
+import { money, formatDuration } from "@/lib/format";
 
 interface ReimbDraft {
   category: string;
@@ -21,11 +21,20 @@ export function PlayerCheckoutSheet({
     session.chipsOut !== null ? String(session.chipsOut) : "",
   );
   const [reimb, setReimb] = useState<ReimbDraft[]>([]);
+  const [hourlyReturn, setHourlyReturn] = useState(session.hourlyReturn);
+  const [hourlyRate, setHourlyRate] = useState(session.hourlyRate ?? "25");
   const [error, setError] = useState<string | null>(null);
   const checkout = useCheckoutPlayer(tableId);
 
   const reimbTotal = reimb.reduce((a, r) => a + (Number(r.amount) || 0), 0);
-  const net = (Number(chips) || 0) - session.buyInTotal + reimbTotal;
+  const hours =
+    ((session.checkoutAt ? new Date(session.checkoutAt) : new Date()).getTime() -
+      new Date(session.checkinAt).getTime()) /
+    3_600_000;
+  const comp = hourlyReturn
+    ? Math.round((Number(hourlyRate) || 0) * hours * 100) / 100
+    : 0;
+  const net = (Number(chips) || 0) - session.buyInTotal + reimbTotal + comp;
 
   function patch(i: number, p: Partial<ReimbDraft>) {
     setReimb((rows) => rows.map((r, j) => (j === i ? { ...r, ...p } : r)));
@@ -44,6 +53,8 @@ export function PlayerCheckoutSheet({
         reimbursements: reimb
           .filter((r) => r.category.trim() && Number(r.amount) > 0)
           .map((r) => ({ category: r.category.trim(), amount: Number(r.amount) })),
+        hourlyReturn,
+        hourlyRate: Number(hourlyRate) || 0,
       });
       onClose();
     } catch (e) {
@@ -122,6 +133,40 @@ export function PlayerCheckoutSheet({
           </button>
         </div>
 
+        <div className="space-y-2">
+          <label className="flex items-center justify-between">
+            <span className="text-sm font-medium">
+              Time comp{" "}
+              <span className="text-slate-400">
+                ({formatDuration(
+                  session.checkinAt,
+                  session.checkoutAt ?? undefined,
+                )})
+              </span>
+            </span>
+            <input
+              type="checkbox"
+              checked={hourlyReturn}
+              onChange={(e) => setHourlyReturn(e.target.checked)}
+              className="h-5 w-5 accent-violet-600"
+            />
+          </label>
+          {hourlyReturn && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-slate-500">Rate $/hr</span>
+              <input
+                value={hourlyRate}
+                onChange={(e) => setHourlyRate(e.target.value)}
+                inputMode="numeric"
+                className="input w-24"
+              />
+              <span className="ml-auto text-sm font-semibold text-emerald-600">
+                +{money(comp)}
+              </span>
+            </div>
+          )}
+        </div>
+
         <div className="rounded-2xl bg-slate-100 p-4">
           <div className="flex items-center justify-between text-sm text-slate-500">
             <span>Net (paid to player)</span>
@@ -135,7 +180,8 @@ export function PlayerCheckoutSheet({
           </div>
           <p className="mt-1 text-xs text-slate-400">
             chips {money(Number(chips) || 0)} − buy-ins{" "}
-            {money(session.buyInTotal)} + reimbursements {money(reimbTotal)}
+            {money(session.buyInTotal)} + reimb {money(reimbTotal)}
+            {comp > 0 ? ` + time ${money(comp)}` : ""}
           </p>
         </div>
 
