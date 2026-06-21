@@ -7,14 +7,16 @@ import { requireAuth } from "../auth/middleware";
 
 export const authRouter = Router();
 
+// Accounts log in with a username (their name). We store it in the unique
+// `email` column (the login key) so no schema change is needed. The display
+// name defaults to the username.
 const registerSchema = z.object({
-  email: z.string().email(),
+  username: z.string().min(1, "name is required").max(80),
   password: z.string().min(8, "password must be at least 8 characters"),
-  displayName: z.string().min(1).max(80).optional(),
 });
 
 const loginSchema = z.object({
-  email: z.string().email(),
+  username: z.string().min(1),
   password: z.string().min(1),
 });
 
@@ -26,7 +28,13 @@ function publicUser(u: {
   displayName: string;
   role: string;
 }) {
-  return { id: u.id, email: u.email, displayName: u.displayName, role: u.role };
+  // `email` doubles as the username/login key.
+  return {
+    id: u.id,
+    username: u.email,
+    displayName: u.displayName,
+    role: u.role,
+  };
 }
 
 authRouter.post("/register", async (req, res) => {
@@ -34,21 +42,22 @@ authRouter.post("/register", async (req, res) => {
   if (!parsed.success) {
     return res.status(400).json({ error: parsed.error.flatten() });
   }
-  const { email, password, displayName } = parsed.data;
+  const username = parsed.data.username.trim();
+  const { password } = parsed.data;
 
-  const existing = await prisma.user.findUnique({ where: { email } });
+  const existing = await prisma.user.findUnique({ where: { email: username } });
   if (existing) {
-    return res.status(409).json({ error: "email already registered" });
+    return res.status(409).json({ error: "username already taken" });
   }
 
-  // The very first account becomes the admin.
+  // The very first account becomes the admin; everyone else is a host.
   const isFirst = (await prisma.user.count()) === 0;
 
   const user = await prisma.user.create({
     data: {
-      email,
+      email: username,
       passwordHash: await hashPassword(password),
-      displayName: displayName ?? email.split("@")[0],
+      displayName: username,
       role: isFirst ? "admin" : "host",
     },
   });
@@ -62,11 +71,12 @@ authRouter.post("/login", async (req, res) => {
   if (!parsed.success) {
     return res.status(400).json({ error: parsed.error.flatten() });
   }
-  const { email, password } = parsed.data;
+  const username = parsed.data.username.trim();
+  const { password } = parsed.data;
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await prisma.user.findUnique({ where: { email: username } });
   if (!user || !(await verifyPassword(password, user.passwordHash))) {
-    return res.status(401).json({ error: "invalid email or password" });
+    return res.status(401).json({ error: "invalid username or password" });
   }
 
   const token = signToken({ sub: user.id, role: user.role as Role });

@@ -32,23 +32,22 @@ export function ProfileList() {
                 onClick={() => setEditing(p)}
                 className="block w-full text-left"
               >
-                <div className="relative">
-                  <AuthImage
-                    photoId={p.photoId}
-                    alt={p.name}
-                    fallback="avatar"
-                    className="aspect-square w-full rounded-2xl object-cover"
-                  />
-                  {p.roles.length > 0 && (
-                    <RoleBadges
-                      roles={p.roles}
-                      className="absolute bottom-1 left-1"
-                    />
-                  )}
-                </div>
-                <span className="mt-1 block truncate text-xs text-slate-700">
+                <AuthImage
+                  photoId={p.photoId}
+                  alt={p.name}
+                  fallback="avatar"
+                  className="aspect-square w-full rounded-2xl object-cover"
+                />
+                <span className="mt-1 block truncate text-sm font-medium text-slate-800">
                   {p.name}
                 </span>
+                {p.roles.length > 0 && (
+                  <RoleBadges
+                    roles={p.roles}
+                    variant="label"
+                    className="mt-0.5"
+                  />
+                )}
               </button>
             </li>
           ))}

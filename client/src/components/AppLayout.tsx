@@ -1,11 +1,32 @@
+import { useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { LogOut } from "lucide-react";
+import { LogOut, RefreshCw } from "lucide-react";
 import { useAuth } from "@/features/auth/AuthContext";
 import { BottomNav } from "./BottomNav";
 
 /** Protected shell: requires a signed-in host, renders nav + the active page. */
 export function AppLayout() {
   const { user, loading, logout } = useAuth();
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Clear cached assets/data and reload so the newest deploy from the server is
+  // picked up in one tap (otherwise the PWA cache can serve a stale build).
+  async function refresh() {
+    setRefreshing(true);
+    try {
+      if ("serviceWorker" in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.update()));
+      }
+      if (typeof caches !== "undefined") {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+    } catch {
+      // best effort — reload regardless
+    }
+    window.location.reload();
+  }
 
   if (loading) {
     return (
@@ -26,8 +47,17 @@ export function AppLayout() {
           <span className="font-extrabold tracking-tight text-violet-600">
             PokerPoker
           </span>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <span className="text-sm text-slate-500">{user.displayName}</span>
+            <button
+              onClick={refresh}
+              disabled={refreshing}
+              className="flex items-center justify-center rounded-lg bg-violet-100 p-2 text-violet-700 active:scale-95 disabled:opacity-60"
+              aria-label="Refresh"
+              title="Refresh to latest"
+            >
+              <RefreshCw size={15} className={refreshing ? "animate-spin" : ""} />
+            </button>
             <button
               onClick={logout}
               className="flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs font-semibold text-slate-600 active:scale-95"

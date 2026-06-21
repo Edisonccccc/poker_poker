@@ -3,7 +3,7 @@ import { api } from "@/lib/api";
 export interface AdminHost {
   id: string;
   displayName: string;
-  email: string;
+  username: string;
   role: "admin" | "host";
   createdAt: string;
   games: number;

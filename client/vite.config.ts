@@ -14,7 +14,7 @@ export default defineConfig({
         short_name: "PokerPoker",
         description: "Host manager for home poker & blackjack games",
         theme_color: "#7c3aed",
-        background_color: "#f4f5fa",
+        background_color: "#7c3aed",
         display: "standalone",
         orientation: "portrait",
         start_url: "/",

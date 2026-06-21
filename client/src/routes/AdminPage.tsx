@@ -42,7 +42,7 @@ export function AdminPage() {
                   </span>
                 )}
               </div>
-              <div className="text-sm text-slate-500">{h.email}</div>
+              <div className="text-sm text-slate-500">@{h.username}</div>
               <div className="mt-2 flex items-center justify-between text-sm">
                 <span className="text-slate-500">
                   {h.games} session{h.games === 1 ? "" : "s"} · {h.tables} table

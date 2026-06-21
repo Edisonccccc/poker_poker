@@ -6,9 +6,8 @@ export function LoginPage() {
   const { login, register, user } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"login" | "register">("login");
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -23,21 +22,21 @@ export function LoginPage() {
     setBusy(true);
     try {
       if (mode === "login") {
-        await login(email, password);
+        await login(username, password);
       } else {
-        await register(email, password, displayName || undefined);
+        await register(username, password);
       }
       navigate("/", { replace: true });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "";
       if (msg.includes("API 409")) {
-        setError("That email is already registered — try signing in.");
+        setError("That name is already taken — try signing in.");
       } else if (msg.includes("API 400")) {
         setError(
-          "Check your details: enter a valid email and a password of at least 8 characters.",
+          "Enter your name and a password of at least 8 characters.",
         );
       } else if (msg.includes("API 401")) {
-        setError("Invalid email or password.");
+        setError("Invalid name or password.");
       } else {
         setError("Something went wrong. Is the server running? Check the terminal.");
       }
@@ -59,22 +58,12 @@ export function LoginPage() {
         </div>
 
         <form onSubmit={onSubmit} className="space-y-3">
-          {mode === "register" && (
-            <Field
-              label="Name"
-              value={displayName}
-              onChange={setDisplayName}
-              placeholder="Your name"
-              autoComplete="name"
-            />
-          )}
           <Field
-            label="Email"
-            type="email"
-            value={email}
-            onChange={setEmail}
-            placeholder="you@example.com"
-            autoComplete="email"
+            label="Name"
+            value={username}
+            onChange={setUsername}
+            placeholder="Your name"
+            autoComplete="username"
             required
           />
           <Field

@@ -10,7 +10,7 @@ import { api, setAuthToken } from "@/lib/api";
 export type Role = "admin" | "host";
 export interface User {
   id: string;
-  email: string;
+  username: string;
   displayName: string;
   role: Role;
 }
@@ -18,12 +18,8 @@ export interface User {
 interface AuthState {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (
-    email: string,
-    password: string,
-    displayName?: string,
-  ) => Promise<void>;
+  login: (username: string, password: string) => Promise<void>;
+  register: (username: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -61,9 +57,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value: AuthState = {
     user,
     loading,
-    login: (email, password) => authenticate("/auth/login", { email, password }),
-    register: (email, password, displayName) =>
-      authenticate("/auth/register", { email, password, displayName }),
+    login: (username, password) =>
+      authenticate("/auth/login", { username, password }),
+    register: (username, password) =>
+      authenticate("/auth/register", { username, password }),
     logout: () => {
       localStorage.removeItem(TOKEN_KEY);
       setAuthToken(null);

@@ -70,7 +70,11 @@ adminRouter.get("/admin/hosts", async (_req, res) => {
   });
 
   const rows = await Promise.all(
-    users.map(async (u: any) => ({ ...u, ...(await hostSummary(u.id)) })),
+    users.map(async (u: any) => {
+      const { email, ...rest } = u;
+      // `email` doubles as the username/login key.
+      return { ...rest, username: email, ...(await hostSummary(u.id)) };
+    }),
   );
   res.json(rows);
 });
