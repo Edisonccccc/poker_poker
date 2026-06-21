@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { Trash2 } from "lucide-react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { Trash2, Pencil } from "lucide-react";
 import { useGame, useDeleteTable } from "@/features/games/hooks";
 import { AddTableSheet } from "@/features/games/AddTableSheet";
+import { EditSessionSheet } from "@/features/games/EditSessionSheet";
 import { HostCosts } from "@/features/afterGame/HostCosts";
 import { Insurance } from "@/features/afterGame/Insurance";
 import { GameStatsPanel } from "@/features/stats/GameStatsPanel";
@@ -23,8 +24,10 @@ export function GameDetailPage() {
   const gameId = id!;
   const { data: game, isLoading, isError } = useGame(gameId);
   const deleteTable = useDeleteTable(gameId);
+  const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("tables");
   const [adding, setAdding] = useState(false);
+  const [editing, setEditing] = useState(false);
 
   if (isLoading) return <p className="text-sm text-slate-400">Loading…</p>;
   if (isError || !game)
@@ -48,7 +51,16 @@ export function GameDetailPage() {
             </p>
           </div>
         </div>
-        <StatusPill status={game.status} />
+        <div className="flex items-center gap-2">
+          <StatusPill status={game.status} />
+          <button
+            onClick={() => setEditing(true)}
+            className="p-2 text-slate-400"
+            aria-label="Edit session"
+          >
+            <Pencil size={18} />
+          </button>
+        </div>
       </header>
 
       <div className="flex rounded-xl bg-slate-100 p-1">
@@ -114,6 +126,13 @@ export function GameDetailPage() {
 
       {adding && (
         <AddTableSheet gameId={gameId} onClose={() => setAdding(false)} />
+      )}
+      {editing && (
+        <EditSessionSheet
+          game={game}
+          onClose={() => setEditing(false)}
+          onDeleted={() => navigate("/games")}
+        />
       )}
     </div>
   );

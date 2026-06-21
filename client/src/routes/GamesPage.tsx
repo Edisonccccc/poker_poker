@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useGames } from "@/features/games/hooks";
+import { Trash2 } from "lucide-react";
+import { useGames, useDeleteGame } from "@/features/games/hooks";
 import { CreateGameSheet } from "@/features/games/CreateGameSheet";
 import { formatGameDate, formatTime, sessionEmoji } from "@/lib/format";
 
 export function GamesPage() {
   const { data, isLoading, isError } = useGames();
+  const deleteGame = useDeleteGame();
   const [creating, setCreating] = useState(false);
 
   return (
@@ -29,17 +31,17 @@ export function GamesPage() {
       {data && data.length > 0 && (
         <ul className="space-y-2">
           {data.map((g) => (
-            <li key={g.id}>
+            <li key={g.id} className="card flex items-center gap-3">
               <Link
                 to={`/games/${g.id}`}
-                className="card flex items-center gap-3 active:bg-slate-100"
+                className="flex min-w-0 flex-1 items-center gap-3 active:opacity-70"
               >
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-2xl">
                   {sessionEmoji(g.id)}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold">
+                  <div className="flex items-center gap-2">
+                    <span className="truncate font-semibold">
                       {g.label || formatGameDate(g.gameDate)}
                     </span>
                     <StatusPill status={g.status} />
@@ -50,6 +52,20 @@ export function GamesPage() {
                   </div>
                 </div>
               </Link>
+              <button
+                onClick={() => {
+                  if (
+                    confirm(
+                      "Delete this session? All its tables and records are removed.",
+                    )
+                  )
+                    deleteGame.mutate(g.id);
+                }}
+                className="shrink-0 p-2 text-slate-400"
+                aria-label="Delete session"
+              >
+                <Trash2 size={18} />
+              </button>
             </li>
           ))}
         </ul>

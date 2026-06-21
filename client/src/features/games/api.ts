@@ -74,6 +74,10 @@ export const listGames = () => api.get<GameListItem[]>("/games");
 export const getGame = (id: string) => api.get<GameDetail>(`/games/${id}`);
 export const createGame = (body: CreateGameInput) =>
   api.post<GameListItem>("/games", body);
+export const updateGame = (
+  id: string,
+  body: CreateGameInput & { status?: Status },
+) => api.patch<GameListItem>(`/games/${id}`, body);
 export const deleteGame = (id: string) => api.del<void>(`/games/${id}`);
 
 export const addTable = (gameId: string, body: CreateTableInput) =>
