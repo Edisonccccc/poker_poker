@@ -48,7 +48,7 @@ export function TableDetailPage() {
   const [dealerCheckout, setDealerCheckout] = useState<DealerSession | null>(null);
 
   if (isLoading || !table)
-    return <p className="text-sm text-white/50">Loading…</p>;
+    return <p className="text-sm text-slate-400">Loading…</p>;
 
   const groups = groupByPlayer(players.data ?? []);
   const selectedGroup =
@@ -77,12 +77,12 @@ export function TableDetailPage() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <Link to={`/games/${table.gameId}`} className="text-sm text-white/55">
+        <Link to={`/games/${table.gameId}`} className="text-sm text-slate-500">
           ← Session
         </Link>
         <button
           onClick={onDeleteTable}
-          className="text-white/40"
+          className="text-slate-400"
           aria-label="Delete table"
         >
           <Trash2 size={18} />
@@ -95,7 +95,7 @@ export function TableDetailPage() {
             {gameTypeLabel(table.type)}
             {table.stakes ? ` ${table.stakes}` : ""}
           </h1>
-          {table.label && <p className="text-sm text-white/55">{table.label}</p>}
+          {table.label && <p className="text-sm text-slate-500">{table.label}</p>}
         </div>
         <StatusPill status={table.status} />
       </header>
@@ -128,7 +128,7 @@ export function TableDetailPage() {
             {dealers.data.map((s) => (
               <li
                 key={s.id}
-                className="flex items-center gap-3 rounded-xl bg-white/5 p-3"
+                className="flex items-center gap-3 rounded-xl bg-slate-100 p-3"
               >
                 <AuthImage
                   photoId={s.dealer.photoId}
@@ -137,14 +137,14 @@ export function TableDetailPage() {
                 />
                 <div className="min-w-0 flex-1">
                   <div className="truncate font-medium">{s.dealer.name}</div>
-                  <div className="text-xs text-white/55">
+                  <div className="text-xs text-slate-500">
                     {formatDuration(s.checkinAt, s.checkoutAt ?? undefined)}
                     {s.tipsTotal !== null && ` · ${money(s.tipsTotal)} tips`}
                   </div>
                 </div>
                 <button
                   onClick={() => setDealerCheckout(s)}
-                  className="rounded-lg bg-felt-light px-3 py-1.5 text-sm font-semibold"
+                  className="rounded-lg bg-violet-600 text-white px-3 py-1.5 text-sm font-semibold"
                 >
                   {s.status === "active" ? "Tips" : "Edit"}
                 </button>
@@ -153,7 +153,7 @@ export function TableDetailPage() {
                     if (confirm(`Remove ${s.dealer.name}?`))
                       removeDealer.mutate(s.id);
                   }}
-                  className="px-1 text-white/40"
+                  className="px-1 text-slate-400"
                   aria-label="Remove"
                 >
                   ✕

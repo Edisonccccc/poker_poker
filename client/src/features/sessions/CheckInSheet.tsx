@@ -27,10 +27,10 @@ export function CheckInSheet({
   );
 
   return (
-    <div className="fixed inset-0 z-20 flex flex-col bg-felt-dark">
+    <div className="fixed inset-0 z-20 flex flex-col bg-white">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-3 px-4 py-6">
         <header className="flex items-center justify-between">
-          <button onClick={onClose} className="text-sm text-white/60">
+          <button onClick={onClose} className="text-sm text-slate-500">
             Cancel
           </button>
           <h2 className="text-base font-semibold capitalize">
@@ -50,7 +50,7 @@ export function CheckInSheet({
           <>
             <button
               onClick={() => setMode("scan")}
-              className="min-h-tap w-full rounded-xl bg-felt-light px-4 py-3 text-sm font-semibold"
+              className="min-h-tap w-full rounded-xl bg-violet-600 text-white px-4 py-3 text-sm font-semibold"
             >
               📷 Scan face
             </button>
@@ -66,7 +66,7 @@ export function CheckInSheet({
                   <button
                     disabled={busy}
                     onClick={() => onPick(p.id)}
-                    className="flex w-full items-center gap-3 rounded-xl bg-white/5 p-2 text-left disabled:opacity-50"
+                    className="flex w-full items-center gap-3 rounded-xl bg-slate-100 p-2 text-left disabled:opacity-50"
                   >
                     <AuthImage
                       photoId={p.photoId}
@@ -78,7 +78,7 @@ export function CheckInSheet({
                 </li>
               ))}
               {filtered.length === 0 && (
-                <li className="py-6 text-center text-sm text-white/50">
+                <li className="py-6 text-center text-sm text-slate-400">
                   No {kind} found. Add them under Profiles.
                 </li>
               )}

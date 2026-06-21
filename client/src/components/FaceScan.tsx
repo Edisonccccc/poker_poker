@@ -85,12 +85,12 @@ export function FaceScan({
   if (state === "error") {
     return (
       <div className="space-y-3">
-        <p className="text-sm text-amber-400">
+        <p className="text-sm text-amber-600">
           Camera or face models unavailable.
         </p>
         <button
           onClick={onManual}
-          className="min-h-tap w-full rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold"
+          className="min-h-tap w-full rounded-xl bg-slate-100 px-4 py-3 text-sm font-semibold"
         >
           Search by name instead
         </button>
@@ -108,7 +108,7 @@ export function FaceScan({
           className="absolute inset-0 h-full w-full object-cover"
         />
         {state === "preparing" && (
-          <div className="absolute inset-0 flex items-center justify-center text-sm text-white/60">
+          <div className="absolute inset-0 flex items-center justify-center text-sm text-slate-500">
             Preparing camera…
           </div>
         )}
@@ -121,7 +121,7 @@ export function FaceScan({
               <button
                 disabled={busy}
                 onClick={() => onMatch(m.candidate.id)}
-                className="flex w-full items-center gap-3 rounded-xl bg-white/5 p-2 text-left disabled:opacity-50"
+                className="flex w-full items-center gap-3 rounded-xl bg-slate-100 p-2 text-left disabled:opacity-50"
               >
                 <AuthImage
                   photoId={m.candidate.photoId}
@@ -129,7 +129,7 @@ export function FaceScan({
                   className="h-11 w-11 rounded-full object-cover"
                 />
                 <span className="flex-1 font-medium">{m.candidate.name}</span>
-                <span className="text-xs text-white/40">
+                <span className="text-xs text-slate-400">
                   {Math.max(0, Math.round((1 - m.distance) * 100))}%
                 </span>
               </button>
@@ -139,7 +139,7 @@ export function FaceScan({
       )}
 
       {results && results.length === 0 && (
-        <p className="text-sm text-white/55">
+        <p className="text-sm text-slate-500">
           {noFace
             ? "No face detected — center your face in the frame and scan again."
             : enrolled === 0
@@ -152,14 +152,14 @@ export function FaceScan({
         <button
           onClick={scan}
           disabled={state !== "ready"}
-          className="min-h-tap flex-1 rounded-xl bg-felt-light px-4 py-3 text-sm font-semibold disabled:opacity-50"
+          className="min-h-tap flex-1 rounded-xl bg-violet-600 text-white px-4 py-3 text-sm font-semibold disabled:opacity-50"
         >
           {state === "scanning" ? "Scanning…" : "Scan face"}
         </button>
         <button
           onClick={() => startCamera(facing === "user" ? "environment" : "user")}
           disabled={state === "scanning"}
-          className="min-h-tap rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold disabled:opacity-50"
+          className="min-h-tap rounded-xl bg-slate-100 px-4 py-3 text-sm font-semibold disabled:opacity-50"
           aria-label="Flip camera"
         >
           🔄 {facing === "user" ? "Rear" : "Front"}
@@ -167,7 +167,7 @@ export function FaceScan({
       </div>
       <button
         onClick={onManual}
-        className="min-h-tap w-full rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold"
+        className="min-h-tap w-full rounded-xl bg-slate-100 px-4 py-3 text-sm font-semibold"
       >
         Search by name
       </button>

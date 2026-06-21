@@ -30,17 +30,17 @@ export function HostCosts({ gameId }: { gameId: string }) {
           {costs.map((c) => (
             <li
               key={c.id}
-              className="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2 text-sm"
+              className="flex items-center justify-between rounded-xl bg-slate-100 px-3 py-2 text-sm"
             >
               <span className="truncate capitalize">
                 {c.category}
                 {c.note ? ` · ${c.note}` : ""}
               </span>
               <span className="flex items-center gap-3">
-                <span className="text-white/80">{money(c.amount)}</span>
+                <span className="text-slate-700">{money(c.amount)}</span>
                 <button
                   onClick={() => del.mutate(c.id)}
-                  className="text-white/40"
+                  className="text-slate-400"
                   aria-label="Delete"
                 >
                   ✕
@@ -56,7 +56,7 @@ export function HostCosts({ gameId }: { gameId: string }) {
             key={c}
             onClick={() => setCategory(c)}
             className={`flex-1 rounded-lg py-2 text-xs font-semibold capitalize transition ${
-              category === c ? "bg-felt-light" : "bg-white/[0.08] text-white/60"
+              category === c ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-500"
             }`}
           >
             {c}

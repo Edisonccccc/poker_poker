@@ -13,17 +13,17 @@ export function ProfileList({ kind }: { kind: ProfileKind }) {
     <div className="space-y-4">
       <button
         onClick={() => setEditing("new")}
-        className="min-h-tap w-full rounded-xl bg-felt-light px-4 py-3 text-base font-semibold"
+        className="min-h-tap w-full rounded-xl bg-violet-600 text-white px-4 py-3 text-base font-semibold"
       >
         + New {noun}
       </button>
 
-      {isLoading && <p className="text-sm text-white/50">Loading…</p>}
+      {isLoading && <p className="text-sm text-slate-400">Loading…</p>}
       {isError && (
-        <p className="text-sm text-amber-400">Couldn't load {kind}.</p>
+        <p className="text-sm text-amber-600">Couldn't load {kind}.</p>
       )}
       {data && data.length === 0 && (
-        <p className="text-sm text-white/50">
+        <p className="text-sm text-slate-400">
           No {kind} yet. Add your first {noun}.
         </p>
       )}
@@ -41,7 +41,7 @@ export function ProfileList({ kind }: { kind: ProfileKind }) {
                   alt={p.name}
                   className="aspect-square w-full rounded-2xl object-cover"
                 />
-                <span className="mt-1 block truncate text-xs text-white/80">
+                <span className="mt-1 block truncate text-xs text-slate-700">
                   {p.name}
                 </span>
               </button>

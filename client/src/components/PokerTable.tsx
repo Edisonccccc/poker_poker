@@ -23,15 +23,15 @@ export function PokerTable({
   return (
     <div className="relative mx-auto w-full" style={{ aspectRatio: "4 / 5" }}>
       <div
-        className="absolute inset-[6%] rounded-[48%] border-[7px] border-[#4a2f1a]"
+        className="absolute inset-[6%] rounded-[48%] border-4 border-violet-200"
         style={{
           background:
-            "radial-gradient(ellipse at 50% 42%, #1a8a55 0%, #0f5132 55%, #0a3a25 100%)",
-          boxShadow: "inset 0 0 50px rgba(0,0,0,0.45)",
+            "radial-gradient(ellipse at 50% 40%, #ffffff 0%, #f5f3ff 55%, #ede9fe 100%)",
+          boxShadow: "0 10px 30px rgba(124,58,237,0.12)",
         }}
       >
         <div className="absolute inset-0 flex items-center justify-center px-6 text-center">
-          <span className="text-sm font-semibold text-white/75">
+          <span className="text-sm font-semibold text-violet-500/80">
             {centerLabel}
           </span>
         </div>
@@ -51,14 +51,16 @@ export function PokerTable({
             <AuthImage
               photoId={seat.photoId}
               alt={seat.name}
-              className={`h-12 w-12 rounded-full border-2 object-cover shadow-md ${
-                seat.active ? "border-emerald-400" : "border-white/30 opacity-60"
+              className={`h-12 w-12 rounded-full border-2 object-cover shadow ${
+                seat.active
+                  ? "border-violet-500"
+                  : "border-slate-300 opacity-60"
               }`}
             />
-            <span className="mt-0.5 max-w-[68px] truncate text-[11px] font-medium leading-tight">
+            <span className="mt-0.5 max-w-[68px] truncate text-[11px] font-medium leading-tight text-slate-700">
               {seat.name}
             </span>
-            <span className="text-[10px] leading-tight text-white/65">
+            <span className="text-[10px] leading-tight text-slate-500">
               {seat.subtitle}
             </span>
           </button>
@@ -67,7 +69,7 @@ export function PokerTable({
 
       {seats.length === 0 && (
         <div className="absolute inset-0 flex items-end justify-center pb-6">
-          <span className="text-xs text-white/50">
+          <span className="text-xs text-slate-400">
             Check in players to seat them
           </span>
         </div>

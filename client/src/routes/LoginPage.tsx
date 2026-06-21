@@ -49,11 +49,11 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-full items-center justify-center bg-felt-dark px-6 text-white">
+    <div className="flex min-h-full items-center justify-center bg-white px-6 text-slate-900">
       <div className="w-full max-w-sm space-y-6">
         <div className="space-y-1 text-center">
           <h1 className="text-3xl font-bold tracking-tight">PokerPoker</h1>
-          <p className="text-sm text-white/60">
+          <p className="text-sm text-slate-500">
             {mode === "login" ? "Sign in to host" : "Create a host account"}
           </p>
         </div>
@@ -87,7 +87,7 @@ export function LoginPage() {
             required
           />
 
-          {error && <p className="text-sm text-amber-400">{error}</p>}
+          {error && <p className="text-sm text-amber-600">{error}</p>}
 
           <button type="submit" disabled={busy} className="btn-primary w-full">
             {busy
@@ -104,7 +104,7 @@ export function LoginPage() {
             setMode(mode === "login" ? "register" : "login");
             setError(null);
           }}
-          className="w-full text-center text-sm text-white/60 underline"
+          className="w-full text-center text-sm text-slate-500 underline"
         >
           {mode === "login"
             ? "Need an account? Sign up"

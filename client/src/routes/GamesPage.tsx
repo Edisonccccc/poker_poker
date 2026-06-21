@@ -16,12 +16,12 @@ export function GamesPage() {
         + New session
       </button>
 
-      {isLoading && <p className="text-sm text-white/50">Loading…</p>}
+      {isLoading && <p className="text-sm text-slate-400">Loading…</p>}
       {isError && (
-        <p className="text-sm text-amber-400">Couldn't load sessions.</p>
+        <p className="text-sm text-amber-600">Couldn't load sessions.</p>
       )}
       {data && data.length === 0 && (
-        <p className="text-sm text-white/50">
+        <p className="text-sm text-slate-400">
           No sessions yet. Create your first.
         </p>
       )}
@@ -30,7 +30,7 @@ export function GamesPage() {
         <ul className="space-y-2">
           {data.map((g) => (
             <li key={g.id}>
-              <Link to={`/games/${g.id}`} className="card block active:bg-white/[0.07]">
+              <Link to={`/games/${g.id}`} className="card block active:bg-slate-100">
 
                 <div className="flex items-center justify-between">
                   <span className="font-semibold">
@@ -38,7 +38,7 @@ export function GamesPage() {
                   </span>
                   <StatusPill status={g.status} />
                 </div>
-                <div className="mt-1 text-sm text-white/55">
+                <div className="mt-1 text-sm text-slate-500">
                   {formatGameDate(g.gameDate)} · {formatTime(g.startedAt)} ·{" "}
                   {g._count.tables} table{g._count.tables === 1 ? "" : "s"}
                 </div>
@@ -58,8 +58,8 @@ export function StatusPill({ status }: { status: "open" | "closed" }) {
     <span
       className={`pill ${
         status === "open"
-          ? "bg-emerald-500/20 text-emerald-300"
-          : "bg-white/10 text-white/50"
+          ? "bg-emerald-100 text-emerald-700"
+          : "bg-slate-100 text-slate-400"
       }`}
     >
       {status}

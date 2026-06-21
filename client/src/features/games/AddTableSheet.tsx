@@ -107,14 +107,14 @@ export function AddTableSheet({
     <div className="sheet">
       <div className="sheet-body">
         <header className="flex items-center justify-between">
-          <button onClick={onClose} className="text-sm text-white/60">
+          <button onClick={onClose} className="text-sm text-slate-500">
             Cancel
           </button>
           <h2 className="text-base font-semibold">Add table</h2>
           <button
             onClick={save}
             disabled={busy}
-            className="text-sm font-semibold text-emerald-400 disabled:opacity-50"
+            className="text-sm font-semibold text-emerald-600 disabled:opacity-50"
           >
             Save
           </button>
@@ -128,7 +128,7 @@ export function AddTableSheet({
                 key={t}
                 onClick={() => setType(t)}
                 className={`min-h-tap flex-1 rounded-xl px-3 py-2 text-sm font-semibold transition ${
-                  type === t ? "bg-felt-light" : "bg-white/[0.08] text-white/60"
+                  type === t ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-500"
                 }`}
               >
                 {gameTypeLabel(t)}
@@ -159,12 +159,12 @@ export function AddTableSheet({
 
         <div className="space-y-3">
           <span className="label">Chip colors</span>
-          <p className="text-xs text-white/45">
+          <p className="text-xs text-slate-400">
             Tap 📷 to scan a chip — it auto-fills the color &amp; value.
           </p>
           {denoms.map((d, i) => (
             <div key={i} className="flex items-center gap-2">
-              <label className="relative flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-xl bg-white/[0.08] text-xs text-white/60">
+              <label className="relative flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-xl bg-slate-100 text-xs text-slate-500">
                 {d.scanning ? (
                   "…"
                 ) : d.photoUrl ? (
@@ -202,7 +202,7 @@ export function AddTableSheet({
                   onClick={() =>
                     setDenoms((rows) => rows.filter((_, j) => j !== i))
                   }
-                  className="px-1 text-white/40"
+                  className="px-1 text-slate-400"
                   aria-label="Remove"
                 >
                   ✕
@@ -218,7 +218,7 @@ export function AddTableSheet({
           </button>
         </div>
 
-        {error && <p className="text-sm text-amber-400">{error}</p>}
+        {error && <p className="text-sm text-amber-600">{error}</p>}
       </div>
     </div>
   );

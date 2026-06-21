@@ -37,17 +37,17 @@ export function CreateGameSheet({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-20 flex flex-col bg-felt-dark">
+    <div className="fixed inset-0 z-20 flex flex-col bg-white">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 py-6">
         <header className="flex items-center justify-between">
-          <button onClick={onClose} className="text-sm text-white/60">
+          <button onClick={onClose} className="text-sm text-slate-500">
             Cancel
           </button>
           <h2 className="text-base font-semibold">New session</h2>
           <button
             onClick={save}
             disabled={create.isPending}
-            className="text-sm font-semibold text-emerald-400 disabled:opacity-50"
+            className="text-sm font-semibold text-emerald-600 disabled:opacity-50"
           >
             Create
           </button>
@@ -78,7 +78,7 @@ export function CreateGameSheet({ onClose }: { onClose: () => void }) {
           />
         </Field>
 
-        {error && <p className="text-sm text-amber-400">{error}</p>}
+        {error && <p className="text-sm text-amber-600">{error}</p>}
       </div>
     </div>
   );
@@ -93,7 +93,7 @@ function Field({
 }) {
   return (
     <label className="block space-y-1">
-      <span className="text-xs font-medium uppercase tracking-wide text-white/50">
+      <span className="text-xs font-medium uppercase tracking-wide text-slate-400">
         {label}
       </span>
       {children}

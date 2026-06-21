@@ -27,26 +27,26 @@ export function DealerCheckoutSheet({
   }
 
   return (
-    <div className="fixed inset-0 z-20 flex flex-col bg-felt-dark">
+    <div className="fixed inset-0 z-20 flex flex-col bg-white">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 py-6">
         <header className="flex items-center justify-between">
-          <button onClick={onClose} className="text-sm text-white/60">
+          <button onClick={onClose} className="text-sm text-slate-500">
             Cancel
           </button>
           <h2 className="text-base font-semibold">Dealer tips</h2>
           <button
             onClick={save}
             disabled={checkout.isPending}
-            className="text-sm font-semibold text-emerald-400 disabled:opacity-50"
+            className="text-sm font-semibold text-emerald-600 disabled:opacity-50"
           >
             Save
           </button>
         </header>
 
-        <p className="text-sm text-white/55">{session.dealer.name}</p>
+        <p className="text-sm text-slate-500">{session.dealer.name}</p>
 
-        <div className="rounded-2xl bg-white/5 py-8 text-center text-5xl font-bold">
-          {tips ? money(tips) : <span className="text-white/30">$0</span>}
+        <div className="rounded-2xl bg-slate-100 py-8 text-center text-5xl font-bold">
+          {tips ? money(tips) : <span className="text-slate-300">$0</span>}
         </div>
 
         <div className="mt-auto">

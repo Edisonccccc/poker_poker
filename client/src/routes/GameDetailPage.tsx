@@ -17,13 +17,13 @@ export function GameDetailPage() {
   const [tab, setTab] = useState<Tab>("tables");
   const [adding, setAdding] = useState(false);
 
-  if (isLoading) return <p className="text-sm text-white/50">Loading…</p>;
+  if (isLoading) return <p className="text-sm text-slate-400">Loading…</p>;
   if (isError || !game)
-    return <p className="text-sm text-amber-400">Couldn't load session.</p>;
+    return <p className="text-sm text-amber-600">Couldn't load session.</p>;
 
   return (
     <div className="space-y-4">
-      <Link to="/games" className="text-sm text-white/55">
+      <Link to="/games" className="text-sm text-slate-500">
         ← Sessions
       </Link>
 
@@ -32,14 +32,14 @@ export function GameDetailPage() {
           <h1 className="text-2xl font-bold tracking-tight">
             {game.label || formatGameDate(game.gameDate)}
           </h1>
-          <p className="text-sm text-white/55">
+          <p className="text-sm text-slate-500">
             {formatGameDate(game.gameDate)} · {formatTime(game.startedAt)}
           </p>
         </div>
         <StatusPill status={game.status} />
       </header>
 
-      <div className="flex rounded-xl bg-white/5 p-1">
+      <div className="flex rounded-xl bg-slate-100 p-1">
         {(
           [
             ["tables", "Tables"],
@@ -50,7 +50,7 @@ export function GameDetailPage() {
             key={key}
             onClick={() => setTab(key)}
             className={`min-h-tap flex-1 rounded-lg py-2 text-sm font-semibold transition ${
-              tab === key ? "bg-felt-light text-white" : "text-white/55"
+              tab === key ? "bg-violet-600 text-white" : "text-slate-500"
             }`}
           >
             {labelText}
@@ -65,7 +65,7 @@ export function GameDetailPage() {
               + Add table
             </button>
             {game.tables.length === 0 ? (
-              <p className="text-sm text-white/50">No tables yet.</p>
+              <p className="text-sm text-slate-400">No tables yet.</p>
             ) : (
               <ul className="space-y-2">
                 {game.tables.map((t) => (
@@ -92,7 +92,7 @@ export function GameDetailPage() {
 function TableRow({ table }: { table: TableSummary }) {
   return (
     <li>
-      <Link to={`/tables/${table.id}`} className="card block active:bg-white/[0.07]">
+      <Link to={`/tables/${table.id}`} className="card block active:bg-slate-100">
         <div className="flex items-center justify-between">
           <span className="font-semibold">
             {gameTypeLabel(table.type)}
@@ -100,7 +100,7 @@ function TableRow({ table }: { table: TableSummary }) {
           </span>
           <StatusPill status={table.status} />
         </div>
-        <div className="mt-1 text-sm text-white/55">
+        <div className="mt-1 text-sm text-slate-500">
           {table.label ? `${table.label} · ` : ""}
           {table._count.playerSessions} player
           {table._count.playerSessions === 1 ? "" : "s"}

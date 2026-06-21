@@ -22,7 +22,7 @@ export function BottomNav() {
   const tabs = TABS.filter((t) => !t.adminOnly || user?.role === "admin");
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-10 border-t border-white/10 bg-felt-dark/90 backdrop-blur-xl">
+    <nav className="fixed inset-x-0 bottom-0 z-10 border-t border-slate-200 bg-white/90 backdrop-blur-xl">
       <div
         className="mx-auto flex max-w-md"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
@@ -34,7 +34,7 @@ export function BottomNav() {
             end={end}
             className={({ isActive }) =>
               `flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition ${
-                isActive ? "text-emerald-400" : "text-white/45"
+                isActive ? "text-violet-600" : "text-slate-400"
               }`
             }
           >

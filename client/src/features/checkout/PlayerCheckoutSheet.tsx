@@ -53,23 +53,23 @@ export function PlayerCheckoutSheet({
   }
 
   return (
-    <div className="fixed inset-0 z-20 flex flex-col bg-felt-dark">
+    <div className="fixed inset-0 z-20 flex flex-col bg-white">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 overflow-y-auto px-4 py-6">
         <header className="flex items-center justify-between">
-          <button onClick={onClose} className="text-sm text-white/60">
+          <button onClick={onClose} className="text-sm text-slate-500">
             Cancel
           </button>
           <h2 className="text-base font-semibold">Check out</h2>
           <button
             onClick={save}
             disabled={checkout.isPending}
-            className="text-sm font-semibold text-emerald-400 disabled:opacity-50"
+            className="text-sm font-semibold text-emerald-600 disabled:opacity-50"
           >
             Save
           </button>
         </header>
 
-        <p className="text-sm text-white/55">
+        <p className="text-sm text-slate-500">
           {session.player.name} · {money(session.buyInTotal)} bought in
         </p>
 
@@ -85,7 +85,7 @@ export function PlayerCheckoutSheet({
         </label>
 
         <div className="space-y-2">
-          <span className="text-xs font-medium uppercase tracking-wide text-white/50">
+          <span className="text-xs font-medium uppercase tracking-wide text-slate-400">
             Reimbursements (optional)
           </span>
           {reimb.map((r, i) => (
@@ -105,7 +105,7 @@ export function PlayerCheckoutSheet({
               />
               <button
                 onClick={() => setReimb((rows) => rows.filter((_, j) => j !== i))}
-                className="px-1 text-white/40"
+                className="px-1 text-slate-400"
                 aria-label="Remove"
               >
                 ✕
@@ -116,30 +116,30 @@ export function PlayerCheckoutSheet({
             onClick={() =>
               setReimb((rows) => [...rows, { category: "", amount: "" }])
             }
-            className="min-h-tap w-full rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white/80"
+            className="min-h-tap w-full rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700"
           >
             + Add reimbursement
           </button>
         </div>
 
-        <div className="rounded-2xl bg-white/5 p-4">
-          <div className="flex items-center justify-between text-sm text-white/55">
+        <div className="rounded-2xl bg-slate-100 p-4">
+          <div className="flex items-center justify-between text-sm text-slate-500">
             <span>Net (paid to player)</span>
           </div>
           <div
             className={`text-3xl font-bold ${
-              net >= 0 ? "text-emerald-400" : "text-red-400"
+              net >= 0 ? "text-emerald-600" : "text-red-500"
             }`}
           >
             {money(net)}
           </div>
-          <p className="mt-1 text-xs text-white/45">
+          <p className="mt-1 text-xs text-slate-400">
             chips {money(Number(chips) || 0)} − buy-ins{" "}
             {money(session.buyInTotal)} + reimbursements {money(reimbTotal)}
           </p>
         </div>
 
-        {error && <p className="text-sm text-amber-400">{error}</p>}
+        {error && <p className="text-sm text-amber-600">{error}</p>}
       </div>
     </div>
   );

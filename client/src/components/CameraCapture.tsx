@@ -105,13 +105,13 @@ export function CameraCapture({
               className="absolute inset-0 h-full w-full object-cover"
             />
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center text-sm text-white/40">
+            <div className="absolute inset-0 flex items-center justify-center text-sm text-slate-400">
               No photo
             </div>
           ))}
       </div>
 
-      {error && <p className="text-sm text-amber-400">{error}</p>}
+      {error && <p className="text-sm text-amber-600">{error}</p>}
 
       <div className="flex gap-2">
         {streaming ? (
@@ -119,14 +119,14 @@ export function CameraCapture({
             <button
               type="button"
               onClick={capture}
-              className="min-h-tap flex-1 rounded-xl bg-felt-light px-4 py-3 text-sm font-semibold"
+              className="min-h-tap flex-1 rounded-xl bg-violet-600 text-white px-4 py-3 text-sm font-semibold"
             >
               Capture
             </button>
             <button
               type="button"
               onClick={flip}
-              className="min-h-tap rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold"
+              className="min-h-tap rounded-xl bg-slate-100 px-4 py-3 text-sm font-semibold"
               aria-label="Flip camera"
             >
               🔄 {facing === "user" ? "Rear" : "Front"}
@@ -137,11 +137,11 @@ export function CameraCapture({
             <button
               type="button"
               onClick={start}
-              className="min-h-tap flex-1 rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold"
+              className="min-h-tap flex-1 rounded-xl bg-slate-100 px-4 py-3 text-sm font-semibold"
             >
               {preview || existingPhotoId ? "Retake" : "Use camera"}
             </button>
-            <label className="min-h-tap flex flex-1 cursor-pointer items-center justify-center rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold">
+            <label className="min-h-tap flex flex-1 cursor-pointer items-center justify-center rounded-xl bg-slate-100 px-4 py-3 text-sm font-semibold">
               Choose
               <input
                 type="file"

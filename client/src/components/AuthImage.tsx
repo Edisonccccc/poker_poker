@@ -28,7 +28,7 @@ export function AuthImage({
   }, [data]);
 
   if (!photoId || !url) {
-    return <div className={`bg-white/10 ${className}`} aria-label={alt} />;
+    return <div className={`bg-slate-200 ${className}`} aria-label={alt} />;
   }
   return <img src={url} alt={alt} className={className} />;
 }

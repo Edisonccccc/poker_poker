@@ -20,7 +20,7 @@ export function NumberPad({
   const Key = ({ d }: { d: string }) => (
     <button
       onClick={() => press(d)}
-      className="min-h-tap rounded-xl bg-white/10 py-4 text-2xl font-semibold active:bg-white/20"
+      className="min-h-tap rounded-xl bg-slate-100 py-4 text-2xl font-semibold active:bg-slate-200"
     >
       {d}
     </button>
@@ -35,7 +35,7 @@ export function NumberPad({
       <Key d="0" />
       <button
         onClick={backspace}
-        className="min-h-tap rounded-xl bg-white/10 py-4 text-xl font-semibold active:bg-white/20"
+        className="min-h-tap rounded-xl bg-slate-100 py-4 text-xl font-semibold active:bg-slate-200"
         aria-label="Backspace"
       >
         ⌫

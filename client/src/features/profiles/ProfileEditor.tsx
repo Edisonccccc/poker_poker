@@ -89,10 +89,10 @@ export function ProfileEditor({
   }
 
   return (
-    <div className="fixed inset-0 z-20 flex flex-col bg-felt-dark">
+    <div className="fixed inset-0 z-20 flex flex-col bg-white">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 overflow-y-auto px-4 py-6">
         <header className="flex items-center justify-between">
-          <button onClick={onClose} className="text-sm text-white/60">
+          <button onClick={onClose} className="text-sm text-slate-500">
             Cancel
           </button>
           <h2 className="text-base font-semibold capitalize">
@@ -101,7 +101,7 @@ export function ProfileEditor({
           <button
             onClick={save}
             disabled={busy}
-            className="text-sm font-semibold text-emerald-400 disabled:opacity-50"
+            className="text-sm font-semibold text-emerald-600 disabled:opacity-50"
           >
             Save
           </button>
@@ -114,18 +114,18 @@ export function ProfileEditor({
         />
 
         <label className="block space-y-1">
-          <span className="text-xs font-medium uppercase tracking-wide text-white/50">
+          <span className="text-xs font-medium uppercase tracking-wide text-slate-400">
             Name
           </span>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder={`${noun} name`}
-            className="min-h-tap w-full rounded-xl bg-white/10 px-4 py-3 text-base outline-none focus:ring-2 focus:ring-felt-light"
+            className="min-h-tap w-full rounded-xl bg-slate-100 px-4 py-3 text-base outline-none focus:ring-2 focus:ring-violet-300"
           />
         </label>
 
-        {error && <p className="text-sm text-amber-400">{error}</p>}
+        {error && <p className="text-sm text-amber-600">{error}</p>}
 
         <div className="flex-1" />
 
@@ -133,7 +133,7 @@ export function ProfileEditor({
           <button
             onClick={onDelete}
             disabled={busy}
-            className="min-h-tap rounded-xl border border-red-500/40 px-4 py-3 text-sm font-semibold text-red-400 disabled:opacity-50"
+            className="min-h-tap rounded-xl border border-red-300 px-4 py-3 text-sm font-semibold text-red-500 disabled:opacity-50"
           >
             Delete {noun}
           </button>

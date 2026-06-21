@@ -8,7 +8,7 @@ export function AppLayout() {
 
   if (loading) {
     return (
-      <div className="flex min-h-full items-center justify-center bg-felt-dark text-white/60">
+      <div className="flex min-h-full items-center justify-center text-slate-400">
         Loading…
       </div>
     );
@@ -16,7 +16,7 @@ export function AppLayout() {
   if (!user) return <Navigate to="/login" replace />;
 
   return (
-    <div className="min-h-full bg-felt-dark text-white">
+    <div className="min-h-full">
       <main className="mx-auto max-w-md px-4 pb-24 pt-6">
         <Outlet />
       </main>
