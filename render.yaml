@@ -1,0 +1,24 @@
+# Render blueprint: one web service (Express serving API + built client) + Postgres.
+# Deploy by connecting this repo to Render; it reads this file.
+services:
+  - type: web
+    name: pokerpoker
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run db:deploy && npm run db:sql && npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: VISION_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: pokerpoker-db
+          property: connectionString
+
+databases:
+  - name: pokerpoker-db
+    plan: free

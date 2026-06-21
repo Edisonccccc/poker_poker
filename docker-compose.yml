@@ -1,0 +1,20 @@
+# Local Postgres for development. Matches the managed Postgres you'll use on Render.
+#   docker compose up -d     # start
+#   docker compose down      # stop (keeps data)
+#   docker compose down -v   # stop and wipe data
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: pokerpoker-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: pokerpoker
+      POSTGRES_PASSWORD: pokerpoker
+      POSTGRES_DB: pokerpoker
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

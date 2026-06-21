@@ -1,0 +1,20 @@
+{
+  "name": "poker-poker",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": ["client", "server"],
+  "scripts": {
+    "dev": "concurrently -n client,server -c blue,green \"npm -w client run dev\" \"npm -w server run dev\"",
+    "build": "npm -w client run build && npm -w server run build",
+    "start": "npm -w server run start",
+    "typecheck": "npm -w client run typecheck && npm -w server run typecheck",
+    "db:migrate": "npm -w server run db:migrate",
+    "db:deploy": "npm -w server run db:deploy",
+    "db:sql": "npm -w server run db:sql",
+    "db:studio": "npm -w server run db:studio",
+    "prisma:generate": "npm -w server run prisma:generate"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  }
+}
