@@ -11,12 +11,17 @@ import {
   useRemovePlayerSession,
   useRemoveDealerSession,
 } from "@/features/sessions/hooks";
-import type { PlayerSession, DealerSession } from "@/features/sessions/api";
+import {
+  groupByPlayer,
+  type PlayerSession,
+  type DealerSession,
+} from "@/features/sessions/api";
 import { CheckInSheet } from "@/features/sessions/CheckInSheet";
 import { BuyInSheet } from "@/features/sessions/BuyInSheet";
+import { PlayerHistorySheet } from "@/features/sessions/PlayerHistorySheet";
 import { PlayerCheckoutSheet } from "@/features/checkout/PlayerCheckoutSheet";
 import { DealerCheckoutSheet } from "@/features/checkout/DealerCheckoutSheet";
-import { PokerTable } from "@/components/PokerTable";
+import { PokerTable, type Seat } from "@/components/PokerTable";
 import { AuthImage } from "@/components/AuthImage";
 import { StatusPill } from "./GamesPage";
 import { gameTypeLabel, money, formatDuration } from "@/lib/format";
@@ -37,13 +42,25 @@ export function TableDetailPage() {
   const delTable = useDeleteTable(table?.gameId ?? "");
 
   const [checkin, setCheckin] = useState<"players" | "dealers" | null>(null);
-  const [selected, setSelected] = useState<PlayerSession | null>(null);
+  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [buyInFor, setBuyInFor] = useState<PlayerSession | null>(null);
   const [checkoutFor, setCheckoutFor] = useState<PlayerSession | null>(null);
   const [dealerCheckout, setDealerCheckout] = useState<DealerSession | null>(null);
 
   if (isLoading || !table)
     return <p className="text-sm text-white/50">Loading…</p>;
+
+  const groups = groupByPlayer(players.data ?? []);
+  const selectedGroup =
+    groups.find((g) => g.playerId === selectedPlayerId) ?? null;
+
+  const seats: Seat[] = groups.map((g) => ({
+    id: g.playerId,
+    name: g.player.name,
+    photoId: g.player.photoId,
+    active: g.hasActive,
+    subtitle: g.hasActive ? money(g.totalBuyIn) : money(g.netSoFar),
+  }));
 
   const stakesLabel = `${gameTypeLabel(table.type)}${
     table.stakes ? ` · ${table.stakes}` : ""
@@ -84,9 +101,9 @@ export function TableDetailPage() {
       </header>
 
       <PokerTable
-        players={players.data ?? []}
+        seats={seats}
         centerLabel={stakesLabel}
-        onSelect={setSelected}
+        onSelect={setSelectedPlayerId}
       />
 
       <div className="flex gap-2">
@@ -104,7 +121,6 @@ export function TableDetailPage() {
         </button>
       </div>
 
-      {/* Dealers */}
       {dealers.data && dealers.data.length > 0 && (
         <section className="space-y-2">
           <h2 className="label">Dealers</h2>
@@ -148,67 +164,22 @@ export function TableDetailPage() {
         </section>
       )}
 
-      {/* Player action menu */}
-      {selected && (
-        <div
-          className="fixed inset-0 z-20 flex items-end bg-black/50"
-          onClick={() => setSelected(null)}
-        >
-          <div
-            className="mx-auto w-full max-w-md space-y-2 rounded-t-3xl bg-felt-dark p-4"
-            style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center gap-3 pb-2">
-              <AuthImage
-                photoId={selected.player.photoId}
-                alt={selected.player.name}
-                className="h-11 w-11 rounded-full object-cover"
-              />
-              <div>
-                <div className="font-semibold">{selected.player.name}</div>
-                <div className="text-xs text-white/55">
-                  {money(selected.buyInTotal)} in ·{" "}
-                  {formatDuration(
-                    selected.checkinAt,
-                    selected.checkoutAt ?? undefined,
-                  )}
-                </div>
-              </div>
-            </div>
-            {selected.status === "active" && (
-              <button
-                onClick={() => {
-                  setBuyInFor(selected);
-                  setSelected(null);
-                }}
-                className="btn-ghost w-full"
-              >
-                + Buy-in
-              </button>
-            )}
-            <button
-              onClick={() => {
-                setCheckoutFor(selected);
-                setSelected(null);
-              }}
-              className="btn-primary w-full"
-            >
-              {selected.status === "active" ? "Check out" : "Edit check-out"}
-            </button>
-            <button
-              onClick={() => {
-                const s = selected;
-                setSelected(null);
-                if (confirm(`Remove ${s.player.name} from this table?`))
-                  removePlayer.mutate(s.id);
-              }}
-              className="btn w-full text-red-400"
-            >
-              Remove
-            </button>
-          </div>
-        </div>
+      {selectedGroup && (
+        <PlayerHistorySheet
+          group={selectedGroup}
+          onClose={() => setSelectedPlayerId(null)}
+          onBuyIn={(s) => setBuyInFor(s)}
+          onCheckout={(s) => setCheckoutFor(s)}
+          onCheckInAgain={() =>
+            checkInPlayer.mutate(selectedGroup.playerId, {
+              onError: () => alert("Couldn't check in again."),
+            })
+          }
+          onRemoveSession={(sid) => {
+            if (confirm("Remove this visit and its buy-ins?"))
+              removePlayer.mutate(sid);
+          }}
+        />
       )}
 
       {checkin === "players" && (
@@ -219,7 +190,7 @@ export function TableDetailPage() {
           onPick={(profileId) =>
             checkInPlayer.mutate(profileId, {
               onSuccess: () => setCheckin(null),
-              onError: () => alert("That player may already be checked in."),
+              onError: () => alert("That player is already seated."),
             })
           }
         />
@@ -232,7 +203,7 @@ export function TableDetailPage() {
           onPick={(profileId) =>
             checkInDealer.mutate(profileId, {
               onSuccess: () => setCheckin(null),
-              onError: () => alert("That dealer may already be checked in."),
+              onError: () => alert("That dealer is already checked in."),
             })
           }
         />

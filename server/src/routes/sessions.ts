@@ -36,7 +36,10 @@ const PLAYER_SELECT = {
   status: true,
   chipsOut: true,
   player: { select: { id: true, name: true, photoId: true } },
-  ledger: { select: { type: true, amount: true } },
+  ledger: {
+    select: { id: true, type: true, amount: true, category: true, occurredAt: true },
+    orderBy: { occurredAt: "asc" as const },
+  },
 };
 
 const DEALER_SELECT = {
@@ -58,8 +61,15 @@ function playerRow(s: any) {
   const reimburseTotal = sum("reimbursement");
   const checkedOut = s.status === "checked_out" && s.chipsOut !== null;
   const net = checkedOut ? Number(s.chipsOut) - buyInTotal + reimburseTotal : null;
+  const entries = s.ledger.map((l: any) => ({
+    id: l.id,
+    type: l.type,
+    amount: Number(l.amount),
+    category: l.category ?? null,
+    occurredAt: l.occurredAt,
+  }));
   const { ledger, ...rest } = s;
-  return { ...rest, buyInTotal, reimburseTotal, net };
+  return { ...rest, buyInTotal, reimburseTotal, net, entries };
 }
 
 // ── Player sessions ───────────────────────────────────────────────────────────

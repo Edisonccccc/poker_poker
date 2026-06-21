@@ -1,23 +1,27 @@
 import { AuthImage } from "./AuthImage";
-import { money } from "@/lib/format";
-import type { PlayerSession } from "@/features/sessions/api";
+
+export interface Seat {
+  id: string;
+  name: string;
+  photoId: string | null;
+  active: boolean;
+  subtitle: string;
+}
 
 /**
- * Felt poker table with players seated around the rail. Tap a seat to act on
- * that player. Empty table shows a hint.
+ * Felt poker table with one seat per player around the rail. Tap a seat to act.
  */
 export function PokerTable({
-  players,
+  seats,
   centerLabel,
   onSelect,
 }: {
-  players: PlayerSession[];
+  seats: Seat[];
   centerLabel: string;
-  onSelect: (session: PlayerSession) => void;
+  onSelect: (id: string) => void;
 }) {
   return (
     <div className="relative mx-auto w-full" style={{ aspectRatio: "4 / 5" }}>
-      {/* rail + felt */}
       <div
         className="absolute inset-[6%] rounded-[48%] border-[7px] border-[#4a2f1a]"
         style={{
@@ -33,43 +37,39 @@ export function PokerTable({
         </div>
       </div>
 
-      {/* seats */}
-      {players.map((s, i) => {
-        const angle = ((-90 + (360 * i) / players.length) * Math.PI) / 180;
+      {seats.map((seat, i) => {
+        const angle = ((-90 + (360 * i) / seats.length) * Math.PI) / 180;
         const left = 50 + 47 * Math.cos(angle);
         const top = 50 + 47 * Math.sin(angle);
-        const active = s.status === "active";
         return (
           <button
-            key={s.id}
-            onClick={() => onSelect(s)}
+            key={seat.id}
+            onClick={() => onSelect(seat.id)}
             className="absolute flex w-[68px] -translate-x-1/2 -translate-y-1/2 flex-col items-center"
             style={{ left: `${left}%`, top: `${top}%` }}
           >
             <AuthImage
-              photoId={s.player.photoId}
-              alt={s.player.name}
+              photoId={seat.photoId}
+              alt={seat.name}
               className={`h-12 w-12 rounded-full border-2 object-cover shadow-md ${
-                active ? "border-emerald-400" : "border-white/30 opacity-60"
+                seat.active ? "border-emerald-400" : "border-white/30 opacity-60"
               }`}
             />
             <span className="mt-0.5 max-w-[68px] truncate text-[11px] font-medium leading-tight">
-              {s.player.name}
+              {seat.name}
             </span>
             <span className="text-[10px] leading-tight text-white/65">
-              {active
-                ? money(s.buyInTotal)
-                : s.net !== null
-                  ? money(s.net)
-                  : ""}
+              {seat.subtitle}
             </span>
           </button>
         );
       })}
 
-      {players.length === 0 && (
+      {seats.length === 0 && (
         <div className="absolute inset-0 flex items-end justify-center pb-6">
-          <span className="text-xs text-white/50">Check in players to seat them</span>
+          <span className="text-xs text-white/50">
+            Check in players to seat them
+          </span>
         </div>
       )}
     </div>

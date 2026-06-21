@@ -8,6 +8,14 @@ export interface SessionPerson {
   photoId: string | null;
 }
 
+export interface LedgerEntry {
+  id: string;
+  type: "buy_in" | "reimbursement" | "tip" | "adjustment";
+  amount: number;
+  category: string | null;
+  occurredAt: string;
+}
+
 export interface PlayerSession {
   id: string;
   checkinAt: string;
@@ -18,6 +26,49 @@ export interface PlayerSession {
   buyInTotal: number;
   reimburseTotal: number;
   net: number | null;
+  entries: LedgerEntry[];
+}
+
+/** One player's full history at a table (across multiple check-in cycles). */
+export interface PlayerGroup {
+  playerId: string;
+  player: SessionPerson;
+  sessions: PlayerSession[]; // oldest first
+  active: PlayerSession | null;
+  totalBuyIn: number;
+  netSoFar: number; // sum of net over checked-out sessions
+  hasActive: boolean;
+}
+
+export function groupByPlayer(sessions: PlayerSession[]): PlayerGroup[] {
+  const map = new Map<string, PlayerGroup>();
+  const ordered = [...sessions].sort(
+    (a, b) => +new Date(a.checkinAt) - +new Date(b.checkinAt),
+  );
+  for (const s of ordered) {
+    let g = map.get(s.player.id);
+    if (!g) {
+      g = {
+        playerId: s.player.id,
+        player: s.player,
+        sessions: [],
+        active: null,
+        totalBuyIn: 0,
+        netSoFar: 0,
+        hasActive: false,
+      };
+      map.set(s.player.id, g);
+    }
+    g.sessions.push(s);
+    g.totalBuyIn += s.buyInTotal;
+    if (s.status === "active") {
+      g.active = s;
+      g.hasActive = true;
+    } else if (s.net !== null) {
+      g.netSoFar += s.net;
+    }
+  }
+  return [...map.values()];
 }
 
 export interface DealerSession {
