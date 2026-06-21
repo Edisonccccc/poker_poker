@@ -21,6 +21,7 @@ export function CameraCapture({
   const [streaming, setStreaming] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [facing, setFacing] = useState<"user" | "environment">(facingMode);
 
   useEffect(() => {
     return () => stopStream();
@@ -32,11 +33,12 @@ export function CameraCapture({
     setStreaming(false);
   }
 
-  async function start() {
+  async function startStream(value: "user" | "environment") {
     setError(null);
+    streamRef.current?.getTracks().forEach((t) => t.stop());
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: facingMode } },
+        video: { facingMode: { ideal: value } },
         audio: false,
       });
       streamRef.current = stream;
@@ -44,11 +46,15 @@ export function CameraCapture({
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
       }
+      setFacing(value);
       setStreaming(true);
     } catch {
       setError("Camera unavailable — choose a photo instead.");
     }
   }
+
+  const start = () => startStream(facing);
+  const flip = () => startStream(facing === "user" ? "environment" : "user");
 
   function capture() {
     if (!videoRef.current) return;
@@ -104,31 +110,43 @@ export function CameraCapture({
 
       <div className="flex gap-2">
         {streaming ? (
-          <button
-            type="button"
-            onClick={capture}
-            className="min-h-tap flex-1 rounded-xl bg-felt-light px-4 py-3 text-sm font-semibold"
-          >
-            Capture
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={capture}
+              className="min-h-tap flex-1 rounded-xl bg-felt-light px-4 py-3 text-sm font-semibold"
+            >
+              Capture
+            </button>
+            <button
+              type="button"
+              onClick={flip}
+              className="min-h-tap rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold"
+              aria-label="Flip camera"
+            >
+              🔄 {facing === "user" ? "Rear" : "Front"}
+            </button>
+          </>
         ) : (
-          <button
-            type="button"
-            onClick={start}
-            className="min-h-tap flex-1 rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold"
-          >
-            {preview || existingPhotoId ? "Retake" : "Use camera"}
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={start}
+              className="min-h-tap flex-1 rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold"
+            >
+              {preview || existingPhotoId ? "Retake" : "Use camera"}
+            </button>
+            <label className="min-h-tap flex flex-1 cursor-pointer items-center justify-center rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold">
+              Choose
+              <input
+                type="file"
+                accept="image/*"
+                onChange={onFile}
+                className="hidden"
+              />
+            </label>
+          </>
         )}
-        <label className="min-h-tap flex flex-1 cursor-pointer items-center justify-center rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold">
-          Choose
-          <input
-            type="file"
-            accept="image/*"
-            onChange={onFile}
-            className="hidden"
-          />
-        </label>
       </div>
     </div>
   );

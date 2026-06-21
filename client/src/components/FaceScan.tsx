@@ -31,37 +31,35 @@ export function FaceScan({
   const [state, setState] = useState<State>("preparing");
   const [results, setResults] = useState<MatchResult[] | null>(null);
   const [noFace, setNoFace] = useState(false);
+  const [facing, setFacing] = useState<"user" | "environment">("environment");
   const enrolled = enrolledCount(candidates);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const [stream] = await Promise.all([
-          navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "user" },
-            audio: false,
-          }),
-          loadFaceModels(),
-        ]);
-        if (cancelled) {
-          stream.getTracks().forEach((t) => t.stop());
-          return;
-        }
-        streamRef.current = stream;
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          await videoRef.current.play();
-        }
-        setState("ready");
-      } catch {
-        setState("error");
+  async function startCamera(value: "user" | "environment") {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    try {
+      await loadFaceModels();
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: value } },
+        audio: false,
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
       }
-    })();
+      setFacing(value);
+      setState("ready");
+    } catch {
+      setState("error");
+    }
+  }
+
+  useEffect(() => {
+    startCamera("environment");
     return () => {
-      cancelled = true;
       streamRef.current?.getTracks().forEach((t) => t.stop());
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function scan() {
@@ -159,12 +157,20 @@ export function FaceScan({
           {state === "scanning" ? "Scanning…" : "Scan face"}
         </button>
         <button
-          onClick={onManual}
-          className="min-h-tap flex-1 rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold"
+          onClick={() => startCamera(facing === "user" ? "environment" : "user")}
+          disabled={state === "scanning"}
+          className="min-h-tap rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold disabled:opacity-50"
+          aria-label="Flip camera"
         >
-          Search by name
+          🔄 {facing === "user" ? "Rear" : "Front"}
         </button>
       </div>
+      <button
+        onClick={onManual}
+        className="min-h-tap w-full rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold"
+      >
+        Search by name
+      </button>
     </div>
   );
 }
