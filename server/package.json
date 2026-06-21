@@ -12,6 +12,7 @@
     "db:deploy": "dotenv -e ../.env -- prisma migrate deploy",
     "db:sql": "dotenv -e ../.env -- prisma db execute --file prisma/sql/constraints_and_views.sql --schema prisma/schema.prisma",
     "db:studio": "dotenv -e ../.env -- prisma studio",
+    "reset-password": "tsx scripts/reset-password.ts",
     "db:deploy:prod": "prisma migrate deploy",
     "db:sql:prod": "prisma db execute --file prisma/sql/constraints_and_views.sql --schema prisma/schema.prisma"
   },
