@@ -30,6 +30,12 @@ export function GameStatsPanel({
         <Row label="Player cash-outs" value={-t.playerPayout} />
         <Row label="Dealer tips" value={-t.dealerPayout} />
         <Row label="Reimbursements" value={-t.reimbursements} />
+        {t.insurancePremiums > 0 && (
+          <Row label="Insurance premiums" value={t.insurancePremiums} />
+        )}
+        {t.insurancePayouts > 0 && (
+          <Row label="Insurance payouts" value={-t.insurancePayouts} />
+        )}
         <div className="my-2 border-t border-slate-200" />
         <Row label="Host take" value={t.hostTake} bold />
         <Row label="Host costs" value={-t.hostCosts} />

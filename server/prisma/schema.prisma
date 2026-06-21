@@ -99,9 +99,10 @@ model Player {
   faceDescriptor Float[]  @map("face_descriptor") // 128-d for check-in matching
   createdAt      DateTime @default(now()) @map("created_at")
 
-  host     User            @relation(fields: [hostId], references: [id], onDelete: Cascade)
-  photo    Photo?          @relation("PlayerPhoto", fields: [photoId], references: [id])
-  sessions PlayerSession[]
+  host       User            @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  photo      Photo?          @relation("PlayerPhoto", fields: [photoId], references: [id])
+  sessions   PlayerSession[]
+  insurances Insurance[]
 
   @@index([hostId])
   @@map("players")
@@ -139,6 +140,7 @@ model Game {
   tables      Table[]
   hostCosts   HostCost[]
   settlements Settlement[]
+  insurances  Insurance[]
 
   @@index([hostId, gameDate])
   @@map("games")
@@ -287,4 +289,23 @@ model Settlement {
 
   @@index([gameId])
   @@map("settlements")
+}
+
+// Player insurance on a strong hand: premium paid in, payout on a bad beat.
+// Folds into the host take and the player's settlement net.
+model Insurance {
+  id        String   @id @default(uuid()) @db.Uuid
+  gameId    String   @map("game_id") @db.Uuid
+  playerId  String?  @map("player_id") @db.Uuid
+  label     String?
+  premium   Decimal  @db.Decimal(12, 2)
+  payout    Decimal  @default(0) @db.Decimal(12, 2)
+  note      String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  game   Game    @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  player Player? @relation(fields: [playerId], references: [id], onDelete: SetNull)
+
+  @@index([gameId])
+  @@map("insurance")
 }

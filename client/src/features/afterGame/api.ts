@@ -33,12 +33,24 @@ export interface OtherParty {
   note: string | null;
 }
 
+export interface InsuranceRow {
+  id: string;
+  playerId: string | null;
+  playerName: string | null;
+  premium: number;
+  payout: number;
+  net: number; // player's gain (payout - premium)
+  note: string | null;
+}
+
 export interface SettlementTotals {
   cashIn: number;
   playerPayout: number;
   dealerPayout: number;
   reimbursements: number;
   hostCosts: number;
+  insurancePremiums: number;
+  insurancePayouts: number;
   hostTake: number;
   hostNet: number;
 }
@@ -48,6 +60,7 @@ export interface Settlement {
   dealers: SettlementDealer[];
   hostCosts: HostCost[];
   others: OtherParty[];
+  insurance: InsuranceRow[];
   totals: SettlementTotals;
 }
 
@@ -69,3 +82,21 @@ export const addOtherParty = (
 
 export const deleteOtherParty = (id: string) =>
   api.del<void>(`/settlements/${id}`);
+
+export interface InsuranceInput {
+  playerId?: string | null;
+  label?: string | null;
+  premium: number;
+  payout?: number;
+}
+
+export const addInsurance = (gameId: string, body: InsuranceInput) =>
+  api.post<InsuranceRow>(`/games/${gameId}/insurance`, body);
+
+export const updateInsurance = (
+  id: string,
+  body: Partial<InsuranceInput>,
+) => api.patch<InsuranceRow>(`/insurance/${id}`, body);
+
+export const deleteInsurance = (id: string) =>
+  api.del<void>(`/insurance/${id}`);

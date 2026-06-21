@@ -19,6 +19,14 @@ const settlementSchema = z.object({
   note: z.string().max(200).nullable().optional(),
 });
 
+const insuranceSchema = z.object({
+  playerId: z.string().uuid().nullable().optional(),
+  label: z.string().max(80).nullable().optional(),
+  premium: z.number().nonnegative(),
+  payout: z.number().nonnegative().optional(),
+  note: z.string().max(200).nullable().optional(),
+});
+
 const num = (v: unknown) => Number(v ?? 0);
 
 // ── Host costs ────────────────────────────────────────────────────────────────
@@ -80,13 +88,61 @@ afterGameRouter.delete("/settlements/:id", async (req, res) => {
   res.status(204).end();
 });
 
+// ── Insurance ─────────────────────────────────────────────────────────────────
+
+afterGameRouter.post("/games/:gameId/insurance", async (req, res) => {
+  const game = await getOwnedGame(req.params.gameId, req.user!.id);
+  if (!game) return res.status(404).json({ error: "not found" });
+  const parsed = insuranceSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.flatten() });
+  }
+  const row = await prisma.insurance.create({
+    data: {
+      gameId: game.id,
+      playerId: parsed.data.playerId ?? null,
+      label: parsed.data.label ?? null,
+      premium: parsed.data.premium,
+      payout: parsed.data.payout ?? 0,
+      note: parsed.data.note ?? null,
+    },
+  });
+  res.status(201).json(row);
+});
+
+afterGameRouter.patch("/insurance/:id", async (req, res) => {
+  const existing = await prisma.insurance.findFirst({
+    where: { id: req.params.id, game: { hostId: req.user!.id } },
+  });
+  if (!existing) return res.status(404).json({ error: "not found" });
+  const parsed = insuranceSchema.partial().safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.flatten() });
+  }
+  const row = await prisma.insurance.update({
+    where: { id: existing.id },
+    data: parsed.data,
+  });
+  res.json(row);
+});
+
+afterGameRouter.delete("/insurance/:id", async (req, res) => {
+  const existing = await prisma.insurance.findFirst({
+    where: { id: req.params.id, game: { hostId: req.user!.id } },
+  });
+  if (!existing) return res.status(404).json({ error: "not found" });
+  await prisma.insurance.delete({ where: { id: existing.id } });
+  res.status(204).end();
+});
+
 // ── Settlement summary (bank model, computed) ────────────────────────────────
 
 afterGameRouter.get("/games/:gameId/settlement", async (req, res) => {
   const game = await getOwnedGame(req.params.gameId, req.user!.id);
   if (!game) return res.status(404).json({ error: "not found" });
 
-  const [playerSessions, dealerSessions, hostCosts, others] = await Promise.all([
+  const [playerSessions, dealerSessions, hostCosts, others, insurance] =
+    await Promise.all([
     prisma.playerSession.findMany({
       where: { table: { gameId: game.id } },
       orderBy: { checkinAt: "asc" },
@@ -118,7 +174,28 @@ afterGameRouter.get("/games/:gameId/settlement", async (req, res) => {
       where: { gameId: game.id, partyType: "other" },
       orderBy: { createdAt: "asc" },
     }),
+    prisma.insurance.findMany({
+      where: { gameId: game.id },
+      orderBy: { createdAt: "asc" },
+      include: { player: { select: { id: true, name: true } } },
+    }),
   ]);
+
+  // Insurance: premiums in (host income), payouts out (host expense). Per player,
+  // the delta to their net is (payout − premium).
+  let insurancePremiums = 0;
+  let insurancePayouts = 0;
+  const insByPlayer = new Map<string, number>();
+  for (const r of insurance as any[]) {
+    insurancePremiums += num(r.premium);
+    insurancePayouts += num(r.payout);
+    if (r.playerId) {
+      insByPlayer.set(
+        r.playerId,
+        (insByPlayer.get(r.playerId) ?? 0) + num(r.payout) - num(r.premium),
+      );
+    }
+  }
 
   const players = playerSessions.map((s: any) => {
     const buyInTotal = s.ledger
@@ -142,6 +219,16 @@ afterGameRouter.get("/games/:gameId/settlement", async (req, res) => {
       net,
     };
   });
+
+  // Fold each player's insurance delta into their net once (first checked-out row).
+  const insApplied = new Set<string>();
+  for (const p of players) {
+    if (p.net === null) continue;
+    if (insApplied.has(p.player.id)) continue;
+    const delta = insByPlayer.get(p.player.id);
+    if (delta) p.net += delta;
+    insApplied.add(p.player.id);
+  }
 
   const dealers = dealerSessions.map((s: any) => ({
     sessionId: s.id,
@@ -168,7 +255,13 @@ afterGameRouter.get("/games/:gameId/settlement", async (req, res) => {
     (a: number, c: any) => a + num(c.amount),
     0,
   );
-  const hostTake = cashIn - playerPayout - dealerPayout - reimbursements;
+  const hostTake =
+    cashIn -
+    playerPayout -
+    dealerPayout -
+    reimbursements +
+    insurancePremiums -
+    insurancePayouts;
   const hostNet = hostTake - hostCostsTotal;
 
   res.json({
@@ -186,12 +279,23 @@ afterGameRouter.get("/games/:gameId/settlement", async (req, res) => {
       net: num(o.net),
       note: o.note,
     })),
+    insurance: insurance.map((r: any) => ({
+      id: r.id,
+      playerId: r.playerId,
+      playerName: r.player?.name ?? r.label ?? null,
+      premium: num(r.premium),
+      payout: num(r.payout),
+      net: num(r.payout) - num(r.premium), // player's gain
+      note: r.note,
+    })),
     totals: {
       cashIn,
       playerPayout,
       dealerPayout,
       reimbursements,
       hostCosts: hostCostsTotal,
+      insurancePremiums,
+      insurancePayouts,
       hostTake,
       hostNet,
     },

@@ -26,7 +26,7 @@ import { DealerCheckoutSheet } from "@/features/checkout/DealerCheckoutSheet";
 import { PokerTable, type Seat } from "@/components/PokerTable";
 import { AuthImage } from "@/components/AuthImage";
 import { StatusPill } from "./GamesPage";
-import { gameTypeLabel, money, formatDuration } from "@/lib/format";
+import { gameTypeLabel, money, formatDuration, tableEmoji } from "@/lib/format";
 
 export function TableDetailPage() {
   const { id } = useParams();
@@ -94,12 +94,17 @@ export function TableDetailPage() {
       </div>
 
       <header className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            {gameTypeLabel(table.type)}
-            {table.stakes ? ` ${table.stakes}` : ""}
-          </h1>
-          {table.label && <p className="text-sm text-slate-500">{table.label}</p>}
+        <div className="flex items-center gap-3">
+          <span className="text-3xl">{tableEmoji(table.id)}</span>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">
+              {gameTypeLabel(table.type)}
+              {table.stakes ? ` ${table.stakes}` : ""}
+            </h1>
+            {table.label && (
+              <p className="text-sm text-slate-500">{table.label}</p>
+            )}
+          </div>
         </div>
         <StatusPill status={table.status} />
       </header>

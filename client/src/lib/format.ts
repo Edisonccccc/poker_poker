@@ -3,6 +3,15 @@ import type { GameType } from "@/features/games/api";
 export const gameTypeLabel = (t: GameType): string =>
   t === "texas_holdem" ? "Texas Hold'em" : "Blackjack";
 
+const TABLE_EMOJIS = ["🃏", "🎰", "♠️", "♥️", "♦️", "♣️", "🎲", "🪙", "💎", "🏆"];
+
+/** Deterministic, varied emoji for a table based on its id. */
+export const tableEmoji = (id: string): string => {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return TABLE_EMOJIS[h % TABLE_EMOJIS.length];
+};
+
 export const formatGameDate = (iso: string): string =>
   new Date(iso).toLocaleDateString(undefined, {
     weekday: "short",

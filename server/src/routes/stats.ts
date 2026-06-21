@@ -10,7 +10,7 @@ const num = (v: unknown) => Number(v ?? 0);
 // Host lifetime overview (bank model, across all games).
 statsRouter.get("/stats/overview", async (req, res) => {
   const hostId = req.user!.id;
-  const [games, tables, playerSessions, dealerSessions, hostCosts] =
+  const [games, tables, playerSessions, dealerSessions, hostCosts, insurance] =
     await Promise.all([
       prisma.game.count({ where: { hostId } }),
       prisma.table.count({ where: { game: { hostId } } }),
@@ -29,6 +29,10 @@ statsRouter.get("/stats/overview", async (req, res) => {
       prisma.hostCost.findMany({
         where: { game: { hostId } },
         select: { amount: true },
+      }),
+      prisma.insurance.findMany({
+        where: { game: { hostId } },
+        select: { premium: true, payout: true },
       }),
     ]);
 
@@ -51,7 +55,21 @@ statsRouter.get("/stats/overview", async (req, res) => {
     (a, c) => a + num(c.amount),
     0,
   );
-  const hostTake = cashIn - playerPayout - dealerPayout - reimbursements;
+  const insurancePremiums = (insurance as any[]).reduce(
+    (a, r) => a + num(r.premium),
+    0,
+  );
+  const insurancePayouts = (insurance as any[]).reduce(
+    (a, r) => a + num(r.payout),
+    0,
+  );
+  const hostTake =
+    cashIn -
+    playerPayout -
+    dealerPayout -
+    reimbursements +
+    insurancePremiums -
+    insurancePayouts;
 
   res.json({
     games,
@@ -61,6 +79,8 @@ statsRouter.get("/stats/overview", async (req, res) => {
     dealerPayout,
     reimbursements,
     hostCosts: hostCostsTotal,
+    insurancePremiums,
+    insurancePayouts,
     hostTake,
     hostNet: hostTake - hostCostsTotal,
   });

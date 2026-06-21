@@ -3,12 +3,13 @@ import { Link, useParams } from "react-router-dom";
 import { useGame } from "@/features/games/hooks";
 import { AddTableSheet } from "@/features/games/AddTableSheet";
 import { HostCosts } from "@/features/afterGame/HostCosts";
+import { Insurance } from "@/features/afterGame/Insurance";
 import { GameStatsPanel } from "@/features/stats/GameStatsPanel";
 import { StatusPill } from "./GamesPage";
-import { gameTypeLabel, formatGameDate, formatTime } from "@/lib/format";
+import { gameTypeLabel, formatGameDate, formatTime, tableEmoji } from "@/lib/format";
 import type { TableSummary } from "@/features/games/api";
 
-type Tab = "tables" | "stats";
+type Tab = "tables" | "cost" | "stats";
 
 export function GameDetailPage() {
   const { id } = useParams();
@@ -43,6 +44,7 @@ export function GameDetailPage() {
         {(
           [
             ["tables", "Tables"],
+            ["cost", "Cost"],
             ["stats", "Stats"],
           ] as const
         ).map(([key, labelText]) => (
@@ -74,7 +76,13 @@ export function GameDetailPage() {
               </ul>
             )}
           </div>
+        </div>
+      )}
+
+      {tab === "cost" && (
+        <div className="space-y-5">
           <HostCosts gameId={gameId} />
+          <Insurance gameId={gameId} />
         </div>
       )}
 
@@ -92,18 +100,26 @@ export function GameDetailPage() {
 function TableRow({ table }: { table: TableSummary }) {
   return (
     <li>
-      <Link to={`/tables/${table.id}`} className="card block active:bg-slate-100">
-        <div className="flex items-center justify-between">
-          <span className="font-semibold">
-            {gameTypeLabel(table.type)}
-            {table.stakes ? ` ${table.stakes}` : ""}
-          </span>
-          <StatusPill status={table.status} />
+      <Link
+        to={`/tables/${table.id}`}
+        className="card flex items-center gap-3 active:bg-slate-100"
+      >
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-2xl">
+          {tableEmoji(table.id)}
         </div>
-        <div className="mt-1 text-sm text-slate-500">
-          {table.label ? `${table.label} · ` : ""}
-          {table._count.playerSessions} player
-          {table._count.playerSessions === 1 ? "" : "s"}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between">
+            <span className="font-semibold">
+              {gameTypeLabel(table.type)}
+              {table.stakes ? ` ${table.stakes}` : ""}
+            </span>
+            <StatusPill status={table.status} />
+          </div>
+          <div className="mt-0.5 text-sm text-slate-500">
+            {table.label ? `${table.label} · ` : ""}
+            {table._count.playerSessions} player
+            {table._count.playerSessions === 1 ? "" : "s"}
+          </div>
         </div>
       </Link>
     </li>
