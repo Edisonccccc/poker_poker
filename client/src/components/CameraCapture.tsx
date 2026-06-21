@@ -10,11 +10,16 @@ export function CameraCapture({
   onCapture,
   existingPhotoId,
   facingMode = "user",
+  maxSize = 640,
+  quality = 0.8,
 }: {
   onCapture: (dataUrl: string) => void;
   existingPhotoId?: string | null;
   /** "user" = front (faces/profiles), "environment" = rear (chips on table). */
   facingMode?: "user" | "environment";
+  /** Max long-edge px for the captured image (larger = more detail). */
+  maxSize?: number;
+  quality?: number;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -58,7 +63,7 @@ export function CameraCapture({
 
   function capture() {
     if (!videoRef.current) return;
-    const dataUrl = videoFrameToDataUrl(videoRef.current);
+    const dataUrl = videoFrameToDataUrl(videoRef.current, maxSize, quality);
     setPreview(dataUrl);
     onCapture(dataUrl);
     stopStream();
@@ -68,7 +73,7 @@ export function CameraCapture({
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const dataUrl = await fileToDownscaledDataUrl(file);
+      const dataUrl = await fileToDownscaledDataUrl(file, maxSize, quality);
       setPreview(dataUrl);
       onCapture(dataUrl);
     } catch {

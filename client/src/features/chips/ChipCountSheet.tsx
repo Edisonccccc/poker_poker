@@ -79,9 +79,15 @@ export function ChipCountSheet({
           <>
             {error && <p className="text-sm text-amber-400">{error}</p>}
             <p className="text-sm text-white/55">
-              Spread the chips out and take a clear top-down photo.
+              For best accuracy, spread the chips in a single layer and shoot
+              top-down. Stacks work too, but count by the edges.
             </p>
-            <CameraCapture onCapture={onCapture} facingMode="environment" />
+            <CameraCapture
+              onCapture={onCapture}
+              facingMode="environment"
+              maxSize={1280}
+              quality={0.85}
+            />
           </>
         )}
 

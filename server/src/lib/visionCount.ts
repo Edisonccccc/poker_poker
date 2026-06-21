@@ -49,8 +49,14 @@ export async function countChips(params: {
       text:
         "You count poker chips for a home cash game. Below are reference photos, " +
         "each labeled with its chip color and dollar value, followed by a COUNT " +
-        "photo. Count how many chips of EACH listed color appear in the COUNT " +
-        'photo. Respond with ONLY JSON: {"perColor":[{"color":"<color>",' +
+        "photo.\n\n" +
+        "The COUNT photo may show chips either (a) spread out, where you see the " +
+        "round faces, or (b) STACKED, where you see their colored edges from the " +
+        "side. If stacked, count chips one at a time from top to bottom of each " +
+        "stack, identifying each chip by its edge color and stripe/diamond " +
+        "pattern and matching it to the reference chips. Count carefully and " +
+        "include EVERY chip — do not estimate or round.\n\n" +
+        'Respond with ONLY JSON: {"perColor":[{"color":"<color>",' +
         '"count":<integer>}]} including every listed color (0 if none). No prose.',
     },
   ];
