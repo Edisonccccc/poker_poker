@@ -9,9 +9,12 @@ import { AuthImage } from "./AuthImage";
 export function CameraCapture({
   onCapture,
   existingPhotoId,
+  facingMode = "user",
 }: {
   onCapture: (dataUrl: string) => void;
   existingPhotoId?: string | null;
+  /** "user" = front (faces/profiles), "environment" = rear (chips on table). */
+  facingMode?: "user" | "environment";
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -33,7 +36,7 @@ export function CameraCapture({
     setError(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user" },
+        video: { facingMode: { ideal: facingMode } },
         audio: false,
       });
       streamRef.current = stream;

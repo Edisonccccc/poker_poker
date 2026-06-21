@@ -35,11 +35,16 @@ export function ChipCountSheet({
       setRows(result.perColor);
       setPhase("review");
     } catch (e) {
-      setError(
-        e instanceof Error && e.message.includes("503")
-          ? "Photo counting isn't set up. Enter the count manually instead."
-          : "Couldn't read the photo. Try again or enter manually.",
-      );
+      const msg = e instanceof Error ? e.message : "";
+      if (msg.includes("503")) {
+        setError(
+          "Photo counting isn't set up on the server (check VISION_API_KEY and restart).",
+        );
+      } else {
+        // Surface the server's detail so vision/API problems are diagnosable.
+        const detail = msg.replace(/^API \d+:\s*/, "");
+        setError(`Couldn't count: ${detail || "unknown error"}. Enter manually.`);
+      }
       setPhase("error");
     }
   }
@@ -76,7 +81,7 @@ export function ChipCountSheet({
             <p className="text-sm text-white/55">
               Spread the chips out and take a clear top-down photo.
             </p>
-            <CameraCapture onCapture={onCapture} />
+            <CameraCapture onCapture={onCapture} facingMode="environment" />
           </>
         )}
 

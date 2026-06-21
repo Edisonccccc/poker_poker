@@ -83,8 +83,10 @@ chipsRouter.post("/chips/count", async (req, res) => {
       return res.status(503).json({ error: "Photo counting isn't configured." });
     }
     console.error("chip count failed", e);
+    const detail = e instanceof Error ? e.message.slice(0, 400) : String(e);
     res.status(502).json({
       error: "Couldn't read the photo. Enter the count manually.",
+      detail,
     });
   }
 });
