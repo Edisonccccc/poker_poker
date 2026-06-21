@@ -110,7 +110,7 @@ export function ProfileEditor({
         <CameraCapture
           onCapture={setDataUrl}
           existingPhotoId={existing?.photoId}
-          facingMode="environment"
+          facingMode="user"
         />
 
         <label className="block space-y-1">
