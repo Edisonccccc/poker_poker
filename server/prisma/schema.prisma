@@ -97,6 +97,7 @@ model Player {
   name           String
   photoId        String?  @map("photo_id") @db.Uuid
   roles          String[] @default([]) // player / dealer / host / admin
+  shared         Boolean  @default(false) // admin can share a person across all accounts
   faceDescriptor Float[]  @map("face_descriptor") // 128-d for check-in matching
   createdAt      DateTime @default(now()) @map("created_at")
 

@@ -8,6 +8,8 @@ export interface Profile {
   name: string;
   photoId: string | null;
   roles: string[];
+  shared: boolean;
+  hostId: string;
   createdAt: string;
 }
 
@@ -15,6 +17,7 @@ export interface ProfileInput {
   name: string;
   photoId?: string | null;
   roles?: string[];
+  shared?: boolean;
   faceDescriptor?: number[];
 }
 

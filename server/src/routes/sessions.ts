@@ -112,9 +112,12 @@ sessionsRouter.post("/tables/:tableId/player-sessions", async (req, res) => {
   if (!parsed.success) {
     return res.status(400).json({ error: parsed.error.flatten() });
   }
-  // Player must belong to this host.
+  // Player must belong to this host (or be an admin-shared person).
   const player = await prisma.player.findFirst({
-    where: { id: parsed.data.profileId, hostId: req.user!.id },
+    where: {
+      id: parsed.data.profileId,
+      OR: [{ hostId: req.user!.id }, { shared: true }],
+    },
   });
   if (!player) return res.status(404).json({ error: "player not found" });
   // No duplicate active session at this table.
@@ -285,7 +288,10 @@ sessionsRouter.post("/tables/:tableId/dealer-sessions", async (req, res) => {
     return res.status(400).json({ error: parsed.error.flatten() });
   }
   const dealer = await prisma.player.findFirst({
-    where: { id: parsed.data.profileId, hostId: req.user!.id },
+    where: {
+      id: parsed.data.profileId,
+      OR: [{ hostId: req.user!.id }, { shared: true }],
+    },
   });
   if (!dealer) return res.status(404).json({ error: "person not found" });
   const active = await prisma.dealerSession.findFirst({

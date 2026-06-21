@@ -19,7 +19,10 @@ export function ProfileEditor({
   onClose: () => void;
 }) {
   const { user } = useAuth();
-  const canEditRoles = user?.role === "admin" || user?.role === "host";
+  const isAdmin = user?.role === "admin";
+  // A host can view admin-shared people but only edit their own; admin edits all.
+  const canEdit = !existing || isAdmin || existing.hostId === user?.id;
+  const canEditRoles = canEdit && (isAdmin || user?.role === "host");
 
   const [name, setName] = useState(existing?.name ?? "");
   const [dataUrl, setDataUrl] = useState<string | null>(null);
@@ -110,14 +113,24 @@ export function ProfileEditor({
           <h2 className="text-base font-semibold">
             {existing ? "Edit person" : "New person"}
           </h2>
-          <button
-            onClick={save}
-            disabled={busy}
-            className="text-sm font-semibold text-emerald-600 disabled:opacity-50"
-          >
-            Save
-          </button>
+          {canEdit ? (
+            <button
+              onClick={save}
+              disabled={busy}
+              className="text-sm font-semibold text-emerald-600 disabled:opacity-50"
+            >
+              Save
+            </button>
+          ) : (
+            <span className="w-12" />
+          )}
         </header>
+
+        {!canEdit && (
+          <p className="rounded-xl bg-violet-50 px-3 py-2 text-xs text-violet-700">
+            This is a shared person managed by another account — view only.
+          </p>
+        )}
 
         <CameraCapture
           onCapture={setDataUrl}
@@ -133,7 +146,8 @@ export function ProfileEditor({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Person name"
-            className="min-h-tap w-full rounded-xl bg-slate-100 px-4 py-3 text-base outline-none focus:ring-2 focus:ring-violet-300"
+            disabled={!canEdit}
+            className="min-h-tap w-full rounded-xl bg-slate-100 px-4 py-3 text-base outline-none focus:ring-2 focus:ring-violet-300 disabled:opacity-60"
           />
         </label>
 
@@ -169,7 +183,7 @@ export function ProfileEditor({
 
         <div className="flex-1" />
 
-        {existing && (
+        {existing && canEdit && (
           <button
             onClick={onDelete}
             disabled={busy}

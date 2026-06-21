@@ -80,12 +80,16 @@ create table photos (
   created_at timestamptz not null default now()
 );
 
--- Reusable player profiles, owned by a host
+-- Reusable "people" profiles, owned by a host. One person can hold multiple
+-- roles (player/dealer/host/admin). An admin can mark a person `shared` so they
+-- appear in every account's People list and can be checked in by any host.
 create table players (
   id            uuid primary key default gen_random_uuid(),
   host_id       uuid not null references users(id) on delete cascade,
   name          text not null,
   photo_id      uuid references photos(id),  -- avatar blob
+  roles         text[] not null default '{}',     -- player/dealer/host/admin
+  shared        boolean not null default false,   -- admin-shared across accounts
   face_descriptor  double precision[],       -- 128-d, for check-in matching
   created_at    timestamptz not null default now()
 );
